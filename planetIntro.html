@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Name Your Planet</title>
+  <style>
+    body {
+      background: #000d0d;
+      color: #00ffcc;
+      font-family: monospace;
+      text-align: center;
+      padding-top: 100px;
+    }
+    input {
+      padding: 10px;
+      font-size: 18px;
+      background: #001a1a;
+      color: #fff;
+      border: 1px solid #00ffcc;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background: #00ffcc;
+      color: #000;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Enter Your Planet Name</h1>
+  <input id="planetName" placeholder="e.g. Novaterra">
+  <br>
+  <button onclick="startGame()">Begin Mission</button>
+
+  <script>
+    function startGame() {
+      const name = document.getElementById("planetName").value.trim();
+      if (!name) {
+        alert("Please enter a planet name!");
+        return;
+      }
+
+      localStorage.setItem("planetName", name);
+      localStorage.setItem("terraformingUnlocked", "true");
+      localStorage.setItem("genomeComplete", "false"); 
+      window.location.href = "/index.html";
+    }
+  </script>
+</body>
+</html>
