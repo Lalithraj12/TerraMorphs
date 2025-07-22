@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" href="data:,">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TerraMorphs</title>
@@ -9,145 +8,175 @@
     body {
       margin: 0;
       overflow: hidden;
-      background-color: #192241;
+      background-color: #0b1f2e;
+      font-family: 'Orbitron', sans-serif;
+    }
+    #introScreen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: radial-gradient(#0b1f2e, #020d14);
+      color: #aef;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      padding: 30px;
+      overflow-y: auto;
+      z-index: 9999;
+    }
+    .button {
+      padding: 10px 25px;
+      font-size: 1em;
+      border-radius: 6px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    .primary-btn {
+      background: #00ffcc;
+      color: #000;
+      border: none;
+    }
+    .secondary-btn {
+      background: transparent;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+    }
+    details {
+      margin-top: 15px;
+      padding: 10px;
+      background: #021826;
+      border-left: 3px solid #00ffcc;
+    }
+    summary {
+      font-weight: bold;
+      font-size: 1.1em;
+      cursor: pointer;
+      color: #4af;
+    }
+    #planetNameInput {
+      padding: 10px;
+      font-size: 1em;
+      background: #001a1a;
+      color: #fff;
+      border: 1px solid #00ffcc;
+      margin: 20px;
     }
   </style>
 </head>
 <body>
+  <div id="introScreen">
+    <h1 style="font-size: 2.5em; color: #6cf;">🧬 TerraMorphs: The Exogenesis Chronicles</h1>
+    <p style="max-width: 800px; text-align: center; font-size: 1.1em;">
+      Welcome, Scientist! <br>
+      You’ve arrived on an uninhabitable exoplanet with one mission: <b>Design life and terraform a new world</b> using synthetic biology, trait trials, and planetary simulation.
+    </p>
+
+    <input id="planetNameInput" placeholder="🌍 Name Your Planet (e.g. Novaterra)" />
+
+    <div>
+      <button class="button primary-btn" onclick="startGame()">🚀 Start Simulation</button>
+      <button class="button secondary-btn" onclick="toggleRulebook()">📖 View Game Guide</button>
+    </div>
+
+    <div id="rulebook" style="display: none; max-width: 1000px; margin-top: 20px; color: #aff;">
+      <h2>📜 Rulebook & Player Guide</h2>
+
+      <h3>🎮 General Objective</h3>
+      <p>You are a scientist on an exoplanet tasked with engineering organisms to survive hostile environments. Complete all modules to terraform the planet.</p>
+
+      <h3>⚙️ Game Procedure</h3>
+      <ol>
+        <li>Planet Naming – Store your world identity.</li>
+        <li>Genome Editor – Choose survival traits.</li>
+        <li>BioForge – Validate genetic constructs.</li>
+        <li>Trait Drafting – Refine trait combinations.</li>
+        <li>DNA Synthesis – Build your DNA strand.</li>
+        <li>Evolution Trials – Test your species in real-time hazards.</li>
+        <li>Terraforming – Change the planet's fate.</li>
+      </ol>
+
+      <h3>🧪 Controls & Shortcuts</h3>
+      <ul>
+        <li>Move: <b>W/A/S/D</b></li>
+        <li>Interact: Walk into equipment</li>
+        <li>Open Dashboard: <b>Tab</b></li>
+        <li>Open Rulebook: <b>Ctrl + H</b></li>
+        <li>Clear Save: <code>localStorage.clear()</code> (in dev console)</li>
+      </ul>
+
+      <details><summary>🌍 Planet Naming</summary><p>Enter a name for your new planet. Stored as `planetName`.</p></details>
+      <details><summary>🧬 Genome Editor</summary><p>Choose traits for different zones. Autosaved.</p></details>
+      <details><summary>⚙️ BioForge</summary><p>Match environmental constraints and preview errors.</p></details>
+      <details><summary>🔧 Trait Drafting</summary><p>Filter and prioritize traits for synthesis.</p></details>
+      <details><summary>🧬 DNA Synthesis</summary><p>Visualize your DNA with animated strands.</p></details>
+      <details><summary>🧢 Evolution Trials</summary><p>Simulated stress trials with energy & cooldown system.</p></details>
+      <details><summary>🌱 Terraforming</summary><p>Visually transform your planet based on success rate.</p></details>
+
+      <div id="guidelines" style="display: none; max-width: 1000px; margin-top: 20px; color: #aff;">
+  <h2>🧭 Gameplay Guidelines</h2>
+
+      <ul>
+        <li>💡 Use efficient traits that match multiple zones to conserve energy.</li>
+        <li>🔥 During Evolution Trials, prioritize zones under active threat first.</li>
+        <li>🧬 Don’t overload traits in Genome Editor – balance is key!</li>
+        <li>⚙️ In BioForge, use feedback to correct incompatible traits before proceeding.</li>
+        <li>⏳ Save progress regularly (auto-enabled via localStorage).</li>
+        <li>🌱 If Terraforming doesn’t unlock, replay Evolution Trials to improve survival %.</li>
+        <li>🎯 Hover or walk near lab equipment to see floating tooltips (if enabled).</li>
+      </ul>
+    </div>
+
+      <h3>✅ Completion</h3>
+      <ul>
+        <li>Success if survival ≥ 70%.</li>
+        <li>Bonus traits and final results shown.</li>
+        <li>Terraforming visuals complete the game.</li>
+      </ul>
+    </div>
+  </div>
+
   <div id="gameContainer"></div>
 
   <script>
-    if (!localStorage.getItem("planetName")) {
-      window.location.href = "/planetIntro.html";
-    } else {
+    function startGame() {
+      const name = document.getElementById("planetNameInput").value.trim();
+      if (!name) return alert("Please enter a planet name.");
+      localStorage.setItem("planetName", name);
+      localStorage.setItem("terraformingUnlocked", "true");
+      localStorage.setItem("genomeComplete", "false");
+      document.getElementById("introScreen").style.display = "none";
+      launchGame();
+    }
+
+    function toggleRulebook() {
+      const book = document.getElementById("rulebook");
+      book.style.display = book.style.display === "none" ? "block" : "none";
+    }
+
+    function launchGame() {
       const script = document.createElement("script");
       script.type = "module";
       script.src = "main.js";
       document.body.appendChild(script);
     }
+
+    if (localStorage.getItem("planetName")) {
+      document.getElementById("introScreen").style.display = "none";
+      launchGame();
+    }
+
+    function toggleGuidelines() {
+  const g = document.getElementById("guidelines");
+  g.style.display = g.style.display === "none" ? "block" : "none";
+}
+
+
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key.toLowerCase() === 'h') {
+        toggleRulebook();
+      }
+    });
   </script>
-  <div id="introScreen" style="
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: radial-gradient(#0b1f2e, #020d14);
-  color: #aef;
-  font-family: 'Orbitron', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 30px;
-  z-index: 9999;
-">
-
-  <h1 style="font-size: 2.5em; color: #6cf;">🧬 TerraMorphs: The Exogenesis Chronicles</h1>
-
-  <p style="max-width: 800px; text-align: center; font-size: 1.1em;">
-    Welcome, Scientist!<br>
-    You’ve arrived on an uninhabitable exoplanet with one mission: <b>Design life and terraform a new world</b> using genetic engineering, trait trials, and planetary simulations.
-  </p>
-
-  <h2 style="color: #4af;">🎮 Controls & Shortcuts</h2>
-  <ul style="text-align: left; max-width: 600px;">
-    <li><b>W / A / S / D</b> – Move Scientist</li>
-    <li><b>Mouse Click</b> – Interact with Lab Equipment</li>
-    <li><b>Ctrl + U</b> – Toggle Dog Between Follow / Wander</li>
-    <li><b>Ctrl + M</b> – Bark / Command Dog</li>
-    <li><b>Tab</b> – Open Lab Dashboard</li>
-    <li><b>Click Minimap</b> – Open Full Lab Map</li>
-  </ul>
-
-  <h2 style="color: #4af;">📜 Rules</h2>
-  <ul style="text-align: left; max-width: 600px;">
-    <li>Complete each module to unlock the next.</li>
-    <li>Organism failure may impact your lab environment.</li>
-    <li>Upgrade traits wisely — synergy matters!</li>
-    <li>Once terraforming passes 75%, results are final.</li>
-  </ul>
-
-  <button onclick="document.getElementById('introScreen').style.display='none'" style="
-    margin-top: 30px;
-    padding: 10px 30px;
-    font-size: 1.2em;
-    background: #4af;
-    color: black;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  ">
-    Begin Simulation 🚀
-  </button>
-</div>
-<div id="introScreen" style="
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: radial-gradient(#0b1f2e, #020d14);
-  color: #aef;
-  font-family: 'Orbitron', sans-serif;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 20px;
-  opacity: 0;
-  transition: opacity 1s ease;
-">
-
-  <h1 style="font-size: 2.5em; color: #6cf;">🧬 Genesis: The BioForge Chronicles</h1>
-
-  <input id="planetNameInput" type="text" placeholder="Enter Planet Name" style="
-    padding: 10px;
-    font-size: 1.1em;
-    border: none;
-    border-radius: 4px;
-    margin: 20px 0;
-    opacity: 0;
-    transition: opacity 1.5s ease;
-  " />
-
-  <div style="display: flex; gap: 20px;">
-    <button id="startGameBtn" style="
-      padding: 10px 25px;
-      font-size: 1.1em;
-      background: #4af;
-      color: black;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    ">
-      Start Simulation 🚀
-    </button>
-
-    <button id="rulesBtn" style="
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 1em;
-  border-radius: 6px;
-  border: 1px solid #4af;
-  background: transparent;
-  color: #9ef;
-  cursor: pointer;
-">
-  📜 Show Rules
-</button>
-
-<div id="rulesBox" style="
-  display: none;
-  margin-top: 20px;
-  text-align: left;
-  font-size: 0.95em;
-  color: #ccc;
-  max-width: 600px;
-">
-  <b>Rules:</b><br>
-  • Complete each module to unlock the next.<br>
-  • Organism failure may impact your lab environment.<br>
-  • Upgrade traits wisely — synergy matters!<br>
-  • Once terraforming passes 75%, results are final.<br>
-</div>
-</div>
 </body>
 </html>
