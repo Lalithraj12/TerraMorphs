@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="data:,">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TerraMorphs</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #192241;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer"></div>
+
+  <script>
+    if (!localStorage.getItem("planetName")) {
+      window.location.href = "/planetIntro.html";
+    } else {
+      const script = document.createElement("script");
+      script.type = "module";
+      script.src = "main.js";
+      document.body.appendChild(script);
+    }
+  </script>
+  <div id="introScreen" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: radial-gradient(#0b1f2e, #020d14);
+  color: #aef;
+  font-family: 'Orbitron', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  z-index: 9999;
+">
+
+  <h1 style="font-size: 2.5em; color: #6cf;">🧬 TerraMorphs: The Exogenesis Chronicles</h1>
+
+  <p style="max-width: 800px; text-align: center; font-size: 1.1em;">
+    Welcome, Scientist!<br>
+    You’ve arrived on an uninhabitable exoplanet with one mission: <b>Design life and terraform a new world</b> using genetic engineering, trait trials, and planetary simulations.
+  </p>
+
+  <h2 style="color: #4af;">🎮 Controls & Shortcuts</h2>
+  <ul style="text-align: left; max-width: 600px;">
+    <li><b>W / A / S / D</b> – Move Scientist</li>
+    <li><b>Mouse Click</b> – Interact with Lab Equipment</li>
+    <li><b>Ctrl + U</b> – Toggle Dog Between Follow / Wander</li>
+    <li><b>Ctrl + M</b> – Bark / Command Dog</li>
+    <li><b>Tab</b> – Open Lab Dashboard</li>
+    <li><b>Click Minimap</b> – Open Full Lab Map</li>
+  </ul>
+
+  <h2 style="color: #4af;">📜 Rules</h2>
+  <ul style="text-align: left; max-width: 600px;">
+    <li>Complete each module to unlock the next.</li>
+    <li>Organism failure may impact your lab environment.</li>
+    <li>Upgrade traits wisely — synergy matters!</li>
+    <li>Once terraforming passes 75%, results are final.</li>
+  </ul>
+
+  <button onclick="document.getElementById('introScreen').style.display='none'" style="
+    margin-top: 30px;
+    padding: 10px 30px;
+    font-size: 1.2em;
+    background: #4af;
+    color: black;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  ">
+    Begin Simulation 🚀
+  </button>
+</div>
+<div id="introScreen" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: radial-gradient(#0b1f2e, #020d14);
+  color: #aef;
+  font-family: 'Orbitron', sans-serif;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 1s ease;
+">
+
+  <h1 style="font-size: 2.5em; color: #6cf;">🧬 Genesis: The BioForge Chronicles</h1>
+
+  <input id="planetNameInput" type="text" placeholder="Enter Planet Name" style="
+    padding: 10px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 4px;
+    margin: 20px 0;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+  " />
+
+  <div style="display: flex; gap: 20px;">
+    <button id="startGameBtn" style="
+      padding: 10px 25px;
+      font-size: 1.1em;
+      background: #4af;
+      color: black;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    ">
+      Start Simulation 🚀
+    </button>
+
+    <button id="rulesBtn" style="
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1em;
+  border-radius: 6px;
+  border: 1px solid #4af;
+  background: transparent;
+  color: #9ef;
+  cursor: pointer;
+">
+  📜 Show Rules
+</button>
+
+<div id="rulesBox" style="
+  display: none;
+  margin-top: 20px;
+  text-align: left;
+  font-size: 0.95em;
+  color: #ccc;
+  max-width: 600px;
+">
+  <b>Rules:</b><br>
+  • Complete each module to unlock the next.<br>
+  • Organism failure may impact your lab environment.<br>
+  • Upgrade traits wisely — synergy matters!<br>
+  • Once terraforming passes 75%, results are final.<br>
+</div>
+</div>
+</body>
+</html>
