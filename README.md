@@ -53,6 +53,8 @@ You are a scientist on an uninhabited exoplanet tasked with engineering life for
 | Return to Lab View           | Esc or Exit Button in module |
 | Resume Progress              | Auto prompt if saved data exists |
 | Clear All Saved Data         | Open browser console → localStorage.clear() |
+| To show the progress         | Swift + S |
+| To find the Hints and Objectives | Swift + H |
 
 ---
 
