@@ -152,21 +152,11 @@ localStorage.clear();
 
 ---
 
-## 🔊 Sound & Visual Feedback
-
-- Trait selection, success/failure, and module completions have unique sound cues.
-- Celebration sound and animations for:
-  - DNA synthesis completion
-  - Evolution victory
-  - Terraforming success
-
----
-
 ## 📋 Game Completion
 
 - Full game completion occurs when:
   1. All modules are successfully passed.
-  2. Evolution success is ≥70%.
+  2. Evolution success is ≥75%.
   3. Terraforming simulation finishes.
 
 - The final screen displays survival stats, trait efficiency, and bonus trait rewards.
