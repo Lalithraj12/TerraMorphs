@@ -182,6 +182,8 @@ light.position.set(5, 10, 5);
 scene.add(light);
 
 document.addEventListener("keydown", (e) => {
+
+  const hash = (location.hash || "").toLowerCase();
   keys[e.key.toLowerCase()] = true;
   if (e.ctrlKey && e.key.toLowerCase() === "m") {
     dogState = dogState === "follow" ? "wander" : "follow";
@@ -203,6 +205,8 @@ document.addEventListener("keypress", (e) => {
       .start();
   }
 });
+
+const hash = (location.hash || "").toLowerCase();
 document.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
 function flashRedAlert() {
   const overlay = document.createElement("div");
@@ -244,11 +248,6 @@ function animate() {
   }
   updateDog();
   const dashStatus = localStorage.getItem("dashboardStatus");
-if (dashStatus === "danger") {
-  flashRedAlert();
-  showFullScreenSimulation("Lab Control Dashboard");
-  localStorage.setItem("dashboardStatus", ""); // reset
-}
 
   const roomCollisionBoxes = [];
   scene.traverse(obj => {
@@ -752,49 +751,29 @@ overlay.style.pointerEvents = 'auto';
   content.style.alignItems = 'center';
   content.style.justifyContent = 'center';
 
-  if (name === 'Lab Control Dashboard') {
+if (name === 'Lab Control Dashboard') {
+  const status = localStorage.getItem("dashboardStatus") || "normal";
+  if (status === "started") {
     content.innerHTML = `
-      <div style="text-align: left; font-size: 20px; line-height: 1.6;">
-        🌡️ Temperature: 22.5°C<br>
+      <div style="text-align: left; font-size: 20px;">
+        🌡️ Temp: 22.5°C<br>
+        💾 Power: Stable<br>
+        🧬 Gene Sync: Active<br>
+        🛰️ Mission: In Progress
+      </div>`;
+  } else {
+    content.innerHTML = `
+      <div style="text-align: left; font-size: 20px;">
+        🌡️ Temp: 22.5°C<br>
         🧪 Air Pressure: 101.3 kPa<br>
         🌬️ Oxygen Level: 20.9%<br>
         💾 Power Status: Stable<br>
         🧬 Gene Sync Status: OK<br>
         📶 Network: Connected
       </div>`;
+  }
 
-      const status = localStorage.getItem("dashboardStatus") || "normal";
-
-if (status === "danger") {
-  content.innerHTML = `
-    <div style="text-align: center; font-size: 24px; color: red;">
-      ⚠️ SYSTEM FAILURE DETECTED<br><br>
-      🔥 Reactor Overload<br>
-      🧬 Gene Sequence Collapse<br>
-      🛰️ Network Disruption<br><br>
-      <strong>Wait For some Moments</strong>
-    </div>`;
-} else if (status === "started") {
-  content.innerHTML = `
-    <div style="text-align: left; font-size: 20px;">
-      🌡️ Temp: 22.5°C<br>
-      💾 Power: Stable<br>
-      🧬 Gene Sync: Active<br>
-      🛰️ Mission: In Progress
-    </div>`;
-} else {
-  content.innerHTML = `
-    <div style="text-align: left; font-size: 20px;">
-      🌡️ Temp: 22.5°C<br>
-      🧪 Air Pressure: 101.3 kPa<br>
-      🌬️ Oxygen Level: 20.9%<br>
-      💾 Power Status: Stable<br>
-      🧬 Gene Sync Status: OK<br>
-      📶 Network: Connected
-    </div>`;
-}
-
-  } else if (name === 'Genome Editor') {
+} else if (name === 'Genome Editor') {
     const moduleName = 'genome_editor';
     import(`./game/genome_editor/game.js`).then(module => {
       if (module && typeof module.run === 'function') {
@@ -826,40 +805,47 @@ else if (name === 'Trait Drafting Console') {
   import("./game/trait_lab/traitDraft.js").then(() => {
     console.log("✅ Script Loaded");
     const draftContainer = document.createElement("div");
-    draftContainer.id = "gameContainer";
+    draftContainer.id = "canvas";
     draftContainer.style.width = "100%";
     draftContainer.style.height = "100%";
     draftContainer.style.overflowY = "auto";
+    draftContainer.style.fontSize = "1.2em";
+    draftContainer.style.padding = "20px";
     content.appendChild(draftContainer);
 
-    loadTraitDraftingGame("gameContainer");
+    loadTraitDraftingGame("canvas");
   }).catch(err => {
     console.error("❌ Failed to load traitDraft.js", err);
     content.innerHTML = "<p style='color: red;'>❌ Trait Drafting failed to load.</p>";
   });
 }
 else if (name === 'DNA Synthesis Lab') {
-  import("./game/dna_synthesis/dnaSynthesis.js").then(() => {
+  import("./game/dna_synthesis/dnasynthesis.js").then(() => {
+    console.log("✅ Script Loaded");
     const dnaContainer = document.createElement("div");
-    dnaContainer.id = "gameContainer";
+    dnaContainer.id = "dnaGameContainer";
     dnaContainer.style.width = "100%";
     dnaContainer.style.height = "100%";
     dnaContainer.style.overflow = "auto";
     content.appendChild(dnaContainer);
-    loadDNASynthesisLab("gameContainer");
+
+    loadDNASynthesisLab("dnaGameContainer");
+  }).catch(err => {
+    console.error("❌ Failed to load dnasynthesis.js", err);
+    content.innerHTML = "<p style='color: red;'>❌ DNA Synthesis failed to load.</p>";
   });
 }
 
 else if (name === "Evolution Trials") {
-  import("./game/evolutionTrials/evolutionTrials.js").then(() => {
+  import("./game/evolutionTrials/evolutionTrials1.js").then(() => {
     console.log("✅ Evolution Trials Module Loaded"); 
     const dnaContainer = document.createElement("div");
-    dnaContainer.id = "gameContainer";
+    dnaContainer.id = "evolutionContainer";
     dnaContainer.style.width = "100%";
     dnaContainer.style.height = "100%";
     dnaContainer.style.overflow = "auto";
     content.appendChild(dnaContainer);
-    loadDNASynthesisLab("gameContainer");
+    loadEvolutionTrials("evolutionContainer");
     });
 }
 else if (name === "Terraforming Console") {
@@ -1040,59 +1026,53 @@ wall4.position.x = roomSize / 2;
 scene.add(wall4);
 
 function initMainScene() {
-  document.getElementById("introScreen").style.display = "block";
-  // ✅ Only show intro on first visit
-if (!localStorage.getItem("hasVisitedGenesis")) {
   const introScreen = document.getElementById("introScreen");
   const planetInput = document.getElementById("planetNameInput");
+  const startGameBtn = document.querySelector(".primary-btn");
   const hintBtn = document.getElementById("hintBtn");
   const hintText = document.getElementById("hintText");
-  const startGameBtn = document.getElementById("startGameBtn");
 
+  const savedPlanetName = localStorage.getItem("planetName");
+
+  // ✅ Skip intro if planet already named
+  if (savedPlanetName) {
+    console.log("🌍 Planet already named:", savedPlanetName);
+    introScreen.style.display = "none";
+    return;
+  }
+
+  // ✅ Show intro screen
   introScreen.style.display = "flex";
-
   setTimeout(() => {
     introScreen.style.opacity = "1";
     planetInput.style.opacity = "1";
   }, 100);
 
-  localStorage.setItem("hasVisitedGenesis", "true");
+startGameBtn.addEventListener("click", () => {
+  const name = planetInput.value.trim();
+  if (name) {
+    localStorage.setItem("planetName", name);
+    introScreen.style.opacity = "0";
+    setTimeout(() => {
+      introScreen.style.display = "none";
+      console.log("✅ Planet Name Saved:", name);
+      animate(); // ✅ START GAME LOOP HERE!
+    }, 1000);
+  } else {
+    alert("Please enter your planet name.");
+  }
+});
 
-  startGameBtn.addEventListener("click", () => {
-    const name = planetInput.value.trim();
-    if (name) {
-      localStorage.setItem("planetName", name);
-      introScreen.style.opacity = "0";
-      setTimeout(() => {
-        introScreen.style.display = "none";
-        console.log("Planet Name:", name);
-        // You can trigger any game start logic here
-      }, 1000);
-    } else {
-      alert("Please enter your planet name.");
-    }
-  });
-
-  hintBtn.addEventListener("click", () => {
-    hintText.style.display = "block";
-    hintText.innerHTML = `
-      <b>Genesis: The BioForge Chronicles</b> is a modular evolution game.<br><br>
-      🔬 <b>Genome Editor</b>: Create the DNA blueprint of a species.<br>
-      🧠 <b>Trait Draft</b>: Choose biology traits (Photosynthesis, Melanin, etc).<br>
-      🧬 <b>DNA Synthesis</b>: Assemble DNA from traits with scoring & logic.<br>
-      🧪 <b>Evolution Trials</b>: Simulate threats (toxins, radiation, predators).<br>
-      🌍 <b>Terraforming</b>: Use evolved species to green up the planet by balancing radiation, oxygen, toxicity, and water.<br>
-      📊 <b>Final Result</b>: View planetary success when terraform passes 75%.<br><br>
-      Every module is linked. Your early choices shape the future.
-    `;
-  });
-}
-  animate();
+  // ✅ Show guide
+  if (hintBtn && hintText) {
+    hintBtn.addEventListener("click", () => {
+      hintText.style.display = "block";
+      hintText.innerHTML = `...your game guide content here...`;
+    });
+  }
 }
 
 import TWEEN from "https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@18.6.4/dist/tween.esm.js";
-
-initMainScene();
 
 document.addEventListener("keydown", (e) => {
   if (e.ctrlKey && e.key.toLowerCase() === 'b') {
@@ -1100,21 +1080,26 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+// ✅ Function to switch scenes and save position
 function switchScene(name) {
-  const scientistPos = scientist.position;
-  localStorage.setItem("scientistX", scientistPos.x);
-  localStorage.setItem("scientistZ", scientistPos.z);
-  location.reload();
-}
-
-function restoreLab() {
-  location.hash = '#lab';
-  location.reload();
-}
-
-if (window.location.hash === '#lab') {
-   initMainScene();
-    } else {
-    window.location.hash = '#lab';
-   restoreLab();
+  if (typeof scientist !== "undefined" && scientist.position) {
+    const pos = scientist.position;
+    localStorage.setItem("scientistX", pos.x);
+    localStorage.setItem("scientistZ", pos.z);
   }
+
+}
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  const planetName = localStorage.getItem("planetName");
+
+  if (planetName) {
+    console.log("✅ Planet named, launching game...");
+    animate(); // Start game loop
+  } else {
+    console.log("🧬 No planet yet. Showing intro screen...");
+    initMainScene(); // Show intro and wait for name
+  }
+});
+

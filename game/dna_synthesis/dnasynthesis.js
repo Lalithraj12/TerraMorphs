@@ -10,6 +10,7 @@
   let selectedTraits = [];
   let totalEnergyUsed = 0;
   let undoBuffer = null;
+  let score = 0;
 
   const REQUIRED_ZONES = ["brain", "heart", "genome"];
   const TRAIT_CLASSES = {
@@ -71,6 +72,16 @@ function playSound(file) {
         animation: pulse 0.8s infinite alternate;
         display: inline-block;
       }
+        #healthFill {
+          transition: width 0.4s ease-in-out;
+          animation: glowHealth 1.4s infinite alternate;
+        }
+
+        @keyframes glowHealth {
+          0% { box-shadow: 0 0 4px lime; }
+          100% { box-shadow: 0 0 12px lime; }
+        }
+
       @keyframes pulse {
         from { transform: scale(1); opacity: 0.8; }
         to { transform: scale(1.1); opacity: 1; }
@@ -208,7 +219,8 @@ function playSound(file) {
 
   function renderDNAUI(containerId) {
     injectStyles();
-    const container = document.getElementById(containerId);
+    const container = dnaGameContainer || document.getElementById(containerId);
+    const canvasEl = document.getElementById(containerId);
     if (!container) return;
     container.style.backgroundColor = "#88E788";
 
@@ -225,14 +237,11 @@ function playSound(file) {
       <div id="dnaSlots" style="display:flex; flex-wrap:wrap; gap:10px; margin:20px 0;"></div>
       <h3>Available Traits</h3>
       <div id="traitPool" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
-      <div id="dnaHealthBar" style="width: 100%; background: #222; border: 1px solid #666; margin-top: 20px; border-radius: 4px;">
-      <div id="healthFill" style="width: 0%; height: 16px; background: lime; border-radius: 4px;"></div></div>
-      <button id="finalizeBtn">✅ Finalize DNA</button>
-      <button id="undoBtn" style="display:none;">↩️ Undo Last Action</button>
+      <button id="finalizeBtn" onclick="finalizeDNA()">🧬 Finalize DNA</button>
+      <button id="undoBtn" style="display:none;">↩️ Undo </button>
       <div id="resultMessage"></div>
       <div id="dnaStrand" class="dna-strand-container"></div>
       <div style="margin-top:10px;">
-        <strong>DNA Health:</strong>
         <div style="width:100%;background:#eee;height:20px;border-radius:10px;">
           <div id="healthBar" style="height:100%;width:0%;background:limegreen;border-radius:10px;"></div>
         </div>
@@ -276,7 +285,7 @@ container.innerHTML += `
       }
       undoBuffer = null;
       updateUI();
-      injectStrandAnimationStyles(); // Call this early in renderDNAUI
+      injectStrandAnimationStyles();
     };
   }
 
@@ -330,7 +339,8 @@ container.innerHTML += `
       ${zoneTags}`;
     pool.appendChild(div);
   });
-}function addTraitToSlot(i, trait) {
+}
+function addTraitToSlot(i, trait) {
   if (selectedTraits.length >= MAX_SLOTS) return alert("All slots are filled.");
   if (totalEnergyUsed + trait.cost > MAX_ENERGY) return alert("Not enough energy.");
   undoBuffer = { type: "add", trait, index: i };
@@ -344,7 +354,6 @@ container.innerHTML += `
 
   updateUI();
 }
-
 
   function renderDNASlots() {
   const slots = document.getElementById("dnaSlots");
@@ -368,16 +377,6 @@ container.innerHTML += `
   }
 }
 
-  function addTraitToDNA(trait, index) {
-    if (selectedTraits.length >= MAX_SLOTS) return alert("All slots are filled.");
-    if (totalEnergyUsed + trait.cost > MAX_ENERGY) return alert("Not enough energy.");
-    undoBuffer = { type: "add", trait, index };
-    selectedTraits.push(trait);
-    totalEnergyUsed += trait.cost;
-    availableTraits.splice(index, 1);
-    updateUI();
-  }
-
   function removeTraitFromSlot(i) {
     undoBuffer = { type: "remove", trait: selectedTraits[i], index: i };
     const removed = selectedTraits.splice(i, 1)[0];
@@ -397,6 +396,7 @@ container.innerHTML += `
     updateDNAStrand();
     checkZoneRequirements();
     updateClassBalance();
+    updateHealthBar();
     document.getElementById("undoBtn").style.display = undoBuffer ? "inline-block" : "none";
   }
 
@@ -405,7 +405,8 @@ function updateDNAStrand() {
   if (!strand) return;
 
   const synergyActive = selectedTraits.some(t =>
-    t.zones?.includes("brain") && selectedTraits.find(x => x !== t && x.zones?.includes("genome"))
+  (t.zones || []).includes("brain") &&
+  selectedTraits.find(x => x !== t && (x.zones || []).includes("genome"))
   );
 
   strand.innerHTML = selectedTraits.map((t, i) => {
@@ -416,7 +417,6 @@ function updateDNAStrand() {
     return `<span class="strand-node" style="background:${bg}; ${highlight ? 'box-shadow: 0 0 12px gold;' : ''}">${icon}</span>`;
   }).join('');
 }
-
 
   function calculateScore() {
     const zonesCovered = new Set();
@@ -437,34 +437,83 @@ function updateDNAStrand() {
   }
 
   function finalizeDNA() {
-  if (selectedTraits.length < 4) return alert("You must select at least 4 traits.");
+  if (selectedTraits.length < 4) {
+    alert("You must select at least 4 traits.");
+    return;
+  }
+
+  const score = calculateScore(); 
+  
   localStorage.setItem('finalDNASequence', JSON.stringify(selectedTraits));
   localStorage.setItem('dnaSynthesisScore', score.toString());
   localStorage.setItem('dnaSynthesisComplete', "true");
-  localStorage.setItem("dashboardStatus", "danger");
+  localStorage.setItem("dashboardStatus", "DNA Synthesis Complete");
 
   playSound('finalize.mp3');
 
-  const score = calculateScore();
-  const message = score >= 80 ? '🌟 Excellent organism blueprint!'
-    : score >= 60 ? '🌿 Stable but improvable DNA'
-    : '⚠️ May struggle in extreme environments';
+  const message =
+    score >= 80 ? '🌟 Excellent organism blueprint!' :
+    score >= 60 ? '🌿 Stable but improvable DNA' :
+    '⚠️ May struggle in extreme environments';
+
+  
+  const classCounts = {};
+    selectedTraits.forEach(trait => {
+  const traitClass = trait.class || "Unknown";
+    classCounts[traitClass] = (classCounts[traitClass] || 0) + 1;
+    });
+
+
   const scoreBreakdown = [`🧬 Total Score: ${score}%`, message];
   if (Object.values(classCounts).some(count => count === 0)) {
-  score -= 5;
-  scoreBreakdown.push("⚠️ Class imbalance: -5");
-}
-
+    score -= 5;
+    scoreBreakdown.push("⚠️ Class imbalance: -5");
+  }
 
   const synergyList = [];
-  const names = selectedTraits.map(t => t.name.toLowerCase());
-  const zones = selectedTraits.flatMap(t => t.zones || []);
   const bonusCount = selectedTraits.filter(t => !t.hasOwnProperty("draftIndex")).length;
   const bonusBoost = bonusCount * 2;
 
-  if (zones.includes("brain") && zones.includes("genome")) synergyList.push("🧠 Brain + 🧬 Genome → Neural Synergy Boost");
-  if (zones.includes("immune") && zones.includes("metabolism")) synergyList.push("🛡️ Immune + ⚗️ Metabolism → Toxin Resistance Combo");
+  const zones = selectedTraits.flatMap(t => t.zones || []);
+  const names = selectedTraits.map(t => t.name.toLowerCase());
 
+  if (zones.includes("brain") && zones.includes("genome"))
+    synergyList.push("🧠 Brain + 🧬 Genome → Neural Synergy Boost");
+  if (zones.includes("immune") && zones.includes("metabolism"))
+    synergyList.push("🛡️ Immune + ⚗️ Metabolism → Toxin Resistance Combo");
+
+  const summary = document.getElementById("dnaSummaryScreen");
+  summary.innerHTML = `
+    <div style="background:#f9fdf9; border-radius:12px; padding:24px; box-shadow:0 0 12px rgba(0,0,0,0.2);">
+      <h2 style="text-align:center;">🧬 <span style="color:green;">DNA Summary</span></h2>
+      <p style="font-size:18px;"><strong>🧪 Survival Score:</strong> 
+        <span style="color:${score >= 80 ? 'green' : score >= 60 ? 'orange' : 'red'};">${score}%</span></p>
+      <p><strong>📊 Health Assessment:</strong> ${message}</p>
+      <div style="background:#ddd; height:20px; border-radius:10px; margin:10px 0;">
+        <div id="healthFill" style="width:${score}%; height:100%; background:limegreen; border-radius:10px; transition: width 0.6s;"></div>
+      </div>
+
+      <hr style="margin:20px 0;">
+
+      <h3>🧬 DNA Codon Sequence</h3>
+      <pre style="background:#fff;border:1px solid #ccc;padding:10px;border-radius:6px;max-width:600px;overflow-x:auto;">
+${selectedTraits.map((t, i) => {
+  const zones = (t.zones || ["General"]).join(" | ");
+  return `[${zones}] ${t.name} (Cost: ${t.cost})`;
+}).join("\n")}
+      </pre>
+
+      <div style="margin-top: 30px; font-weight: bold; font-size: 18px; text-align:center;">✅ DNA Synthesis Completed!</div>
+
+      <div style="margin-top: 25px; text-align:center;">
+        <button id="returnToLabBtn" class="back-button" style="margin-left:10px;">🏠 Return to Lab</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("returnToLabBtn").onclick = () => {
+  window.location.href = "/index.html"; 
+};
   document.getElementById("zoneAlert").style.display = "none";
   document.getElementById("dnaSlots").style.display = "none";
   document.getElementById("traitPool").style.display = "none";
@@ -472,51 +521,25 @@ function updateDNAStrand() {
   document.getElementById("undoBtn").style.display = "none";
   document.getElementById("classBalance").style.display = "none";
   document.getElementById("dnaStrand").style.display = "none";
-  document.getElementById("healthFill").style.width = `${Math.min(score, 100)}%`;
+  
+  if (!summary) {
+  console.error("❌ dnaSummaryScreen element not found!");
+  return;
+  }
 
-  const summary = document.getElementById("dnaSummaryScreen");
   summary.style.display = "block";
-  summary.innerHTML = `
-  <div style="background:#f9fdf9; border-radius:12px; padding:24px; box-shadow:0 0 12px rgba(0,0,0,0.2);">
-    <h2 style="text-align:center;">🧬 <span style="color:green;">DNA Summary</span></h2>
-    <p style="font-size:18px;"><strong>🧪 Survival Score:</strong> <span style="color:${score >= 80 ? 'green' : score >= 60 ? 'orange' : 'red'};">${score}%</span></p>
-    <p><strong>📊 Health Assessment:</strong> ${message}</p>
-    
-    <hr style="margin:20px 0;">
 
-    <h3>🔗 Synergy Bonuses</h3>
-    <ul style="padding-left:20px;">
-      ${synergyList.length ? synergyList.map(s => `<li>✨ ${s}</li>`).join('') : "<li>None detected</li>"}
-    </ul>
-
-    <h3>🎁 Bonus Traits</h3>
-    <p>You selected <strong>${bonusCount}</strong> bonus traits → <span style="color:green;">+${bonusBoost}%</span> Adaptation Boost</p>
-
-    <h3>🧬 DNA Codon Sequence</h3>
-    <pre style="background:#fff;border:1px solid #ccc;padding:10px;border-radius:6px;max-width:600px;overflow-x:auto;">
-${selectedTraits.map((t, i) => {
-  const zones = (t.zones || ["General"]).join(" | ");
-  return `[${zones}] ${t.name} (Cost: ${t.cost})`;
-}).join("\n")}
-    </pre>
-    <div style="margin-top: 30px; font-weight: bold; font-size: 18px; text-align:center;">✅ DNA Synthesis Completed!</div>
-  </div>
-${selectedTraits.map(t => {
-  const zones = (t.zones || ["General"]).join(" | ");
-  return `[${zones}] ${t.name} (Cost: ${t.cost})`;
-}).join("\n")}
-</pre>
-<div id="animatedDNA" style="display:none; margin-top:10px;" class="dna-strand-container"></div>
-
-${selectedTraits.map(t => {
-  const zones = (t.zones || ["General"]).join(" | ");
-  return `[${zones}] ${t.name} (Cost: ${t.cost})`;
-}).join("\n")}
-    </pre>
-
-    <div style="margin-top: 30px; font-weight: bold; font-size: 18px;">✅ DNA Synthesis Completed!</div>
-  `;
 }
+function updateHealthBar() {
+  const fillEl = document.getElementById("healthFill");
+  const barEl = document.getElementById("healthBar");
+  const percentage = Math.min(100, (totalEnergyUsed / MAX_ENERGY) * 100);
+
+  if (fillEl) fillEl.style.width = `${percentage}%`;
+  if (barEl) barEl.style.width = `${percentage}%`;
+}
+
+
 window.toggleDNASequence = function () {
   const modal = document.getElementById("dnaPopup");
   const strand = document.getElementById("popupDNAstrand");
@@ -562,5 +585,4 @@ window.loadDNASynthesisLab = function (containerId) {
   }
   renderDNAUI(containerId);
 };
-
 })();

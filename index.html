@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TerraMorphs</title>
+  <link rel="icon" href="data:,">
   <style>
     body {
       margin: 0;
@@ -138,45 +139,45 @@
 
   <div id="gameContainer"></div>
 
+  <script type="module" src="main.js"></script>
+
   <script>
-    function startGame() {
-      const name = document.getElementById("planetNameInput").value.trim();
-      if (!name) return alert("Please enter a planet name.");
-      localStorage.setItem("planetName", name);
-      localStorage.setItem("terraformingUnlocked", "true");
-      localStorage.setItem("genomeComplete", "false");
-      document.getElementById("introScreen").style.display = "none";
-      launchGame();
-    }
+  function startGame() {
+    const name = document.getElementById("planetNameInput").value.trim();
+    if (!name) return alert("Please enter a planet name.");
 
-    function toggleRulebook() {
-      const book = document.getElementById("rulebook");
-      book.style.display = book.style.display === "none" ? "block" : "none";
-    }
+    // ✅ Save data to localStorage
+    localStorage.setItem("planetName", name);
+    localStorage.setItem("terraformingUnlocked", "true");
+    localStorage.setItem("genomeComplete", "false");
 
-    function launchGame() {
-      const script = document.createElement("script");
-      script.type = "module";
-      script.src = "main.js";
-      document.body.appendChild(script);
-    }
+    // ✅ Hide the intro screen
+    document.getElementById("introScreen").style.display = "none";
+  }
 
+  function toggleRulebook() {
+    const book = document.getElementById("rulebook");
+    book.style.display = book.style.display === "none" ? "block" : "none";
+  }
+
+  function toggleGuidelines() {
+    const g = document.getElementById("guidelines");
+    g.style.display = g.style.display === "none" ? "block" : "none";
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
     if (localStorage.getItem("planetName")) {
       document.getElementById("introScreen").style.display = "none";
-      launchGame();
     }
+  });
 
-    function toggleGuidelines() {
-  const g = document.getElementById("guidelines");
-  g.style.display = g.style.display === "none" ? "block" : "none";
-}
+  // ✅ Show rulebook shortcut
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key.toLowerCase() === 'h') {
+      toggleRulebook();
+    }
+  });
+</script>
 
-
-    document.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.key.toLowerCase() === 'h') {
-        toggleRulebook();
-      }
-    });
-  </script>
 </body>
 </html>

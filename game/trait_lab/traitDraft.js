@@ -105,7 +105,6 @@
   ["Desiccation Survival", "Fat Insulation"]
  ];
   const soundEffects = {
-  select: new Audio("sounds/select.mp3"),
   error: new Audio("sounds/error.mp3"),
   skip: new Audio("sounds/skip.mp3"),
   complete: new Audio("sounds/complete.mp3")
@@ -210,7 +209,6 @@ function applyButtonAnimations() {
         const index = parseInt(card.getAttribute('data-index'));
         const chosenTrait = species.traits[index];
         if (totalCost + chosenTrait.cost <= 50) {
-          soundEffects.select.play();
           selectedTraits.push(chosenTrait);
           totalCost += chosenTrait.cost;
           nextSpecies(containerId);
@@ -326,33 +324,42 @@ function applyButtonAnimations() {
     }, 1000);
   }
 
-window.loadTraitDraftingGame = function (containerId) {
-  console.log("✅ Trait Drafting Game Loaded");
+ window.loadTraitDraftingGame = function (containerId) {
+    console.log("✅ Trait Drafting Game Loaded");
 
-  const saved = localStorage.getItem("traitDraftProgress");
+    const saved = localStorage.getItem("traitDraftProgress");
 
-  if (saved) {
-    const resumePrompt = confirm("🔄 Resume your previous Trait Drafting session?");
-    if (resumePrompt) {
-      const data = JSON.parse(saved);
-      currentIndex = data.currentIndex || 0;
-      selectedTraits = data.selectedTraits || [];
-      totalCost = data.totalCost || 0;
-      secondsLeft = data.secondsLeft || 60;
-      startTimer(containerId);
-      renderSpeciesCard(containerId);
-      return;
-    } else {
-      localStorage.removeItem("traitDraftProgress");
+    if (saved) {
+      const resumePrompt = confirm("🔄 Resume your previous Trait Drafting session?");
+      if (resumePrompt) {
+        const data = JSON.parse(saved);
+        currentIndex = data.currentIndex || 0;
+        selectedTraits = data.selectedTraits || [];
+        totalCost = data.totalCost || 0;
+        secondsLeft = data.secondsLeft || 60;
+        startTimer(containerId);
+        renderSpeciesCard(containerId);
+        return;
+      } else {
+        localStorage.removeItem("traitDraftProgress");
+      }
     }
-  }
 
-  currentIndex = 0;
-  selectedTraits = [];
-  totalCost = 0;
-  secondsLeft = 60;
-  clearInterval(timerInterval);
-  renderStartScreen(containerId);
-};
+    currentIndex = 0;
+    selectedTraits = [];
+    totalCost = 0;
+    secondsLeft = 60;
+    clearInterval(timerInterval);
+    renderStartScreen(containerId);
+  };
 
+  document.addEventListener("DOMContentLoaded", () => {
+    const containerId = "canvas";
+    const canvasEl = document.getElementById(containerId);
+    if (canvasEl) {
+      loadTraitDraftingGame(containerId);
+    } else {
+      console.error("Container element with ID 'canvas' not found.");
+    }
+  });
 })();

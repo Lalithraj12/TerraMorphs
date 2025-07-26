@@ -3,56 +3,56 @@
  if (!localStorage.getItem("genomeComplete")) {
   alert("❌ You must complete the Genome Editor before accessing BioForge.");
   window.location.href = "/index.html"; 
+  return;
 }
 
-  const conditionData = {
-    "Water Overload": {
-      description: "The body has excess water. It needs to reduce water retention to avoid cellular damage.",
-      options: ["Activate aquaporins", "Increase sweat rate", "Store water in vacuole", "Suppress ADH"],
-      correct: "Suppress ADH",
-      effect: "Suppressing ADH reduces water reabsorption in kidneys, helping expel excess water."
-    },
-    "Cold": {
-      description: "Low temperature environment. The organism needs to maintain core body temperature.",
-      options: ["Increase metabolism", "Dilate blood vessels", "Sweat more", "Hibernate"],
-      correct: "Increase metabolism",
-      effect: "Higher metabolism generates internal heat, aiding survival in cold environments."
-    },
-    "Low Oxygen": {
-      description: "Oxygen availability is reduced, especially at high altitudes.",
-      options: ["Increase heart rate", "Increase hemoglobin", "Hyperventilate", "Hold breath"],
-      correct: "Increase hemoglobin",
-      effect: "Elevated hemoglobin improves oxygen transport under hypoxic conditions."
-    },
-    "UV Exposure": {
-      description: "Excessive UV radiation exposure can damage cells and DNA.",
-      options: ["Produce melanin", "Increase sweating", "Widen pupils", "Decrease blood flow"],
-      correct: "Produce melanin",
-      effect: "Melanin absorbs harmful UV rays, protecting underlying tissues."
-    },
-    "High Salt": {
-      description: "The environment has high salt concentration, leading to cellular dehydration.",
-      options: ["Drink more water", "Accumulate solutes", "Open salt channels", "Decrease urine output"],
-      correct: "Accumulate solutes",
-      effect: "Accumulating solutes balances internal osmolarity and prevents water loss."
-    },
-    "Dehydration": {
-      description: "The body is losing water faster than it's being replenished.",
-      options: ["Suppress ADH", "Drink seawater", "Increase ADH", "Sweat more"],
-      correct: "Increase ADH",
-      effect: "ADH helps conserve water by promoting reabsorption in the kidneys."
-    }
-  };
+  const conditions = [
+  {
+    condition: "UV radiation",
+    icon: "☀️",
+    options: ["Water retention", "Melanin production", "Camouflage"],
+    correct: "Melanin production",
+    reason: "Melanin absorbs harmful UV rays, preventing cellular damage."
+  },
+  {
+    condition: "Freezing",
+    icon: "❄️",
+    options: ["Thin tail", "Transparent skin", "Thick fur"],
+    correct: "Thick fur",
+    reason: "Thick fur insulates the organism and retains heat."
+  },
+  {
+    condition: "Low Oxygen",
+    icon: "",
+    options: ["Enhanced lung capacity", "Sharp claws", "Color change"],
+    correct: "Enhanced lung capacity",
+    reason: "Greater lung capacity increases oxygen intake."
+  },
+  {
+    condition: "Acidic Environments",
+    icon: "🧪",
+    options: ["Small nostrils", "Dry skin", "Mucus layer"],
+    correct: "Mucus layer",
+    reason: "Mucus protects the skin from acid by neutralizing contact."
+  },
+  {
+    condition: "Environmental Hazards",
+    icon: "🌍",
+    options: ["Fat storage", "Environmental Sensor", "Short limbs"],
+    correct: "Environmental Sensor",
+    reason: "Sensors detect changes in environment to alert the organism."
+  }
+];
+
   const iconMap = {
   "Water Overload": "💧",
   "Cold": "❄️",
-  "Low Oxygen": "🫁",
+  "Low Oxygen": "",
   "UV Exposure": "☀️",
   "High Salt": "🧂",
   "Dehydration": "🥵"
 };
 
-block.innerHTML = `${iconMap[condition] || "🧪"} ${condition}`;
 const geneBtn = document.createElement("button");
 geneBtn.textContent = "🧬 Gene Bank";
 geneBtn.style = "position:fixed; bottom:20px; right:20px; padding:10px 15px; background:black; color:lime; font-family:monospace; border:1px solid lime; cursor:pointer;";
@@ -103,6 +103,7 @@ document.head.appendChild(style);
   let userResponses;
   let geneBankData;
   let currentCondition = null;
+  let condition;
   const correctSound = new Audio("sounds/correct.mp3");
   const wrongSound = new Audio("sounds/wrong.mp3");
   const resumeAvailable = localStorage.getItem("bioForgeComplete") !== null ||
@@ -115,140 +116,147 @@ document.head.appendChild(style);
     localStorage.setItem('geneBankData', JSON.stringify(geneBankData));
   }
 
-  function updateCompletedUI() {
+function updateCompletedUI() {
   const container = document.getElementById("conditionContainer");
   container.innerHTML = '';
 
-  for (const condition in conditionData) {
-    if (!completedConditions.has(condition)) {
-      const block = document.createElement('div');
-      block.className = 'condition-block';
-      block.setAttribute('data-condition', condition);
+conditions.forEach((cond, index) => {
+  if (!completedConditions.has(index)) {
+    const block = document.createElement('div');
+    block.className = 'condition-block';
+    block.setAttribute('data-condition', index);
+    block.addEventListener('click', () => openCondition(index));
+    
+    block.innerHTML = `
+      <div style="font-size: 28px;">${cond.icon}</div>
+      <div>${cond.condition}</div>
+      <div style="margin-top: 6px; height: 10px; background: red; border-radius: 5px; overflow: hidden;">
+        <div style="width: ${Math.random() * 100}%; height: 100%; background: lime;"></div>
+      </div>
+    `;
 
-      const icons = {
-        "Water Overload": "💧",
-        "Cold": "❄️",
-        "Low Oxygen": "🌫️",
-        "UV Exposure": "☀️",
-        "High Salt": "🧂",
-        "Dehydration": "🥵"
-      };
-
-      block.innerHTML = `
-        <div style="font-size: 28px;">${icons[condition]}</div>
-        <div>${condition}</div>
-        <div style="margin-top: 6px; height: 10px; background: red; border-radius: 5px; overflow: hidden;">
-          <div style="width: ${Math.random() * 100}%; height: 100%; background: lime;"></div>
-        </div>
-      `;
-
-      block.addEventListener('click', () => openCondition(condition));
-      container.appendChild(block);
-    }
+    container.appendChild(block);
   }
+});
 
   container.style.display = "flex";
   document.getElementById("livesLeft").textContent = lives;
 }
 
-  function openCondition(condition) {
-    if (!conditionData[condition]) {
-      alert('Condition data not found.');
-      return;
+function openCondition(index) {
+  const data = conditions[index];
+  if (!data) {
+    alert('Condition data not found.');
+    return;
+  }
+
+  currentCondition = index; // ✅ FIXED HERE
+  document.getElementById("conditionContainer").style.display = "none";
+  document.getElementById("introText").style.display = "none";
+  document.getElementById("summaryScreen").style.display = "none";
+  document.getElementById("geneBank").style.display = "none";
+
+  const optionsHTML = data.options.map(opt =>
+    `<button class='option-button' data-opt='${opt}' style="margin: 6px;">${opt}</button>`
+  ).join('');
+
+  document.getElementById("conditionDetail").innerHTML = `
+    <h2>${data.condition}</h2>
+    <div id="optionButtons">${optionsHTML}</div>
+    <p id="statusMessage"></p>
+    <button class="back-button" id="backButton">🔙 Back</button>
+  `;
+
+  document.getElementById("conditionDetail").style.display = "block";
+  document.getElementById("backButton").addEventListener("click", goBack);
+
+  // ✅ Only this one is needed
+  document.querySelectorAll(".option-button").forEach(button => {
+    button.addEventListener("click", () =>
+      selectOption(button, button.getAttribute("data-opt"), currentCondition)
+    );
+  });
+}
+
+function selectOption(button, selected, conditionIndex) {
+  const buttons = document.querySelectorAll('.option-button');
+  buttons.forEach(btn => {
+    if (!conditions[conditionIndex]) {
+  console.error("Invalid conditionIndex:", conditionIndex);
+  return;
     }
-    currentCondition = condition;
-    document.getElementById("conditionContainer").style.display = "none";
-    document.getElementById("introText").style.display = "none";
-    document.getElementById("summaryScreen").style.display = "none";
-    document.getElementById("geneBank").style.display = "none";
+    btn.disabled = true;
+    if (btn.getAttribute("data-opt") === conditions[conditionIndex].correct) {
+      btn.style.backgroundColor = "#4CAF50"; // Green for correct
+    } else {
+      btn.style.backgroundColor = "#f44336"; // Red for others
+    }
+  });
 
-    const data = conditionData[condition];
-    const optionsHTML = data.options.map(opt => 
-      `<button class='option-button' data-opt='${opt}'>${opt}</button>`
-    ).join('');
+  const correct = conditions[conditionIndex].correct;
+  const explanation = conditions[conditionIndex].reason;
 
-    document.getElementById("conditionDetail").innerHTML = `
-      <h2>${condition}</h2>
-      <p>${data.description}</p>
-      <div id="optionButtons">${optionsHTML}</div>
-      <p id="statusMessage"></p>
-      <button class="back-button" id="backButton">🔙 Back</button>
+  if (selected !== correct) {
+    lives--;
+    wrongSound.play();
+    document.getElementById("statusMessage").innerHTML = `
+      ❌ <strong>Incorrect!</strong> Lives remaining: ${lives}<br>
+      <em>Reason:</em> ${explanation}
     `;
+    document.getElementById("statusMessage").style.color = "red";
 
-    document.getElementById("conditionDetail").style.display = "block";
-    document.getElementById("backButton").addEventListener("click", goBack);
-    document.querySelectorAll(".option-button").forEach(button => {
-      button.addEventListener("click", () => selectOption(button, button.getAttribute("data-opt"), currentCondition));
-    });
+    if (lives <= 0) {
+      alert("Game over. You have exhausted all lives.");
+      location.reload();
+    }
+    return;
   }
 
-  function selectOption(button, selected, condition) {
-    const buttons = document.querySelectorAll('.option-button');
-    buttons.forEach(btn => btn.classList.remove('option-selected'));
-    button.classList.add('option-selected');
-    button.style.backgroundColor = '#ffffff';
-    button.style.borderColor = '#000000';
-    button.style.color = '#000000';
+  correctSound.play();
+  document.getElementById("statusMessage").innerHTML = `
+    ✅ <strong>Correct!</strong><br><em>Reason:</em> ${explanation}<br><br>
+    Proceed to the next condition.
+  `;
+  document.getElementById("statusMessage").style.color = "green";
 
-    const correct = conditionData[condition].correct;
+  userResponses[conditionIndex] = selected;
+  completedConditions.add(conditionIndex);
 
-    localStorage.setItem("dashboardStatus", "danger");
-
-    if (selected !== correct) {
-      lives--;
-      wrongSound.play();
-      if (lives <= 0) {
-        alert("Game over. You have exhausted all lives.");
-        location.reload();
-        return;
-      } else {
-        correctSound.play();
-        document.getElementById("statusMessage").textContent = `❌ Incorrect! Lives remaining: ${lives}`;
-        document.getElementById("statusMessage").style.color = "red";
-        updateCompletedUI();
-        return;
-      } 
-    }
-
-    document.getElementById("statusMessage").textContent = "✅ Response saved. Continue to the next condition.";
-    document.getElementById("statusMessage").style.color = "blue";
-
-    userResponses[condition] = selected;
-    completedConditions.add(condition);
-
-    if (!geneBankData.includes(condition)) {
-      geneBankData.push(condition);
-    }
-    
-    const mutIndex = Math.floor(Math.random() * genomeList.length);
-    const chosenCodon = genomeList[mutIndex];
-    genomeList.splice(mutIndex, 1, chosenCodon + "★");
-    localStorage.setItem("playerGenome", genomeList.join(" - "));
-
-    saveProgress();
-    updateCompletedUI();
-
-    if (completedConditions.size === Object.keys(conditionData).length) {
-      document.getElementById("conditionDetail").style.display = "none";
-      showSummary();
-    }
+  if (!geneBankData.includes(conditions[conditionIndex].condition)) {
+    geneBankData.push(conditions[conditionIndex].condition);
   }
+
+  saveProgress();
+  updateCompletedUI();
+
+  if (completedConditions.size === conditions.length) {
+    document.getElementById("conditionDetail").style.display = "none";
+    showSummary();
+  }
+}
 
   function showSummary() {
-    const summary = document.getElementById("summaryScreen");
-    localStorage.setItem("bioForgeComplete", "true");
-    const updatedGenome = localStorage.getItem("playerGenome") || "Unknown";
-    summary.innerHTML = `
-  <p><strong>Genome After Reinforcement:</strong><br>${updatedGenome}</p>
-  `;
-    summary.innerHTML = `<h2>🧬 Adaptation Summary</h2><ul style='text-align:left;max-width:500px;margin:0 auto;'>`;
-    for (let condition of completedConditions) {
-      summary.innerHTML += `<li>✅ <strong>${condition}</strong>: ${conditionData[condition].effect}</li>`;
-    }
-    summary.innerHTML += `</ul><p><strong>Note:</strong> These adaptations will increase the survival percentage in the upcoming tasks.</p>`;
-    summary.innerHTML += `<button class="back-button" onclick="goBack()">🔁 Back to Conditions</button>`;
-    summary.style.display = "block";
+  const summary = document.getElementById("summaryScreen");
+  localStorage.setItem("bioForgeComplete", "true");
+  const updatedGenome = localStorage.getItem("playerGenome") || "Unknown";
+
+  summary.innerHTML = `<h2>🧬 Adaptation Summary</h2>
+    <ul style='text-align:left;max-width:500px;margin:0 auto;'>`;
+
+  for (let idx of completedConditions) {
+  const condition = conditions[idx];
+  if (condition) {
+    summary.innerHTML += `<li>✅ <strong>${condition.condition}</strong>: ${condition.reason}</li>`;
   }
+}
+
+  summary.innerHTML += `</ul>
+    <p><strong>Note:</strong> These adaptations will increase the survival percentage in the upcoming tasks.</p>
+    <button class="back-button" onclick="goBack()">🔁 Back to Conditions</button>
+    <button class="option-button" style="margin-left: 10px;" onclick="window.location.href='/index.html'">🏠 Continue to Lab</button>`;
+
+  summary.style.display = "block";
+}
 
   function goBack() {
     document.getElementById("conditionDetail").style.display = "none";
@@ -260,7 +268,7 @@ document.head.appendChild(style);
 
   function renderBioForgeUI(containerId) {
   const container = document.getElementById(containerId);
-  container.style.backgroundColor = "#ffffff";
+  container.style.backgroundColor = "#d8b370ff";
   container.style.color = "#000000";
   container.style.padding = "30px";
   container.style.minHeight = "100vh";
@@ -269,7 +277,7 @@ document.head.appendChild(style);
   if (resumeAvailable) {
     resumeHTML = `
       <div id="resumePrompt" style="margin-bottom: 20px;">
-        <p>🔄 Resume previous session?</p>
+        <p> You have completed this module. Are you going to continue the Game or Try again this module</p>
         <button id="resumeYes" class="option-button">✅ Yes</button>
         <button id="resumeNo" class="option-button">❌ No (Start New)</button>
       </div>`;
@@ -289,10 +297,10 @@ document.head.appendChild(style);
   `;
 
   if (resumeAvailable) {
-    document.getElementById("resumeYes").onclick = () => {
-      document.getElementById("resumePrompt").style.display = "none";
-      updateCompletedUI();
-    };
+  document.getElementById("resumeYes").onclick = () => {
+    window.location.href = "/index.html"; 
+  };
+
     document.getElementById("resumeNo").onclick = () => {
       localStorage.removeItem("completedConditions");
       localStorage.removeItem("userResponses");
