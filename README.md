@@ -55,6 +55,7 @@ You are a scientist on an uninhabited exoplanet tasked with engineering life for
 | Clear All Saved Data         | Open browser console → localStorage.clear() |
 | To show the progress         | Swift + S |
 | To find the Hints and Objectives | Swift + H |
+| Click Unmute the start the gameplay | Click Unmute |
 
 ---
 
