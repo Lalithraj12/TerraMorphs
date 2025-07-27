@@ -273,6 +273,7 @@ function applyButtonAnimations() {
       <p><strong>Conflict Penalty:</strong> -${draftScore.conflict}</p>
       <p><strong>Final Score:</strong> ${draftScore.final}</p>
         <p>Your final traits will affect the organism in the next stage.</p>
+
       </div>
     `;
     localStorage.setItem("traitDraftProgress", JSON.stringify({

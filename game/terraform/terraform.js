@@ -36,6 +36,28 @@
   height: 340,
   cardHeight: 30
 };
+const planetEvents = [
+  {
+    name: "Solar Flare",
+    log: "Radiation levels spiked temporarily.",
+    effect: (state) => { state.radiation += 2; }
+  },
+  {
+    name: "Acid Rain",
+    log: "Toxic rain increased planet toxicity.",
+    effect: (state) => { state.toxicity += 1; }
+  },
+  {
+    name: "Aurora Field",
+    log: "Electromagnetic field stabilized oxygen synthesis.",
+    effect: (state) => { state.oxygen += 1; }
+  },
+  {
+    name: "Frozen Dust",
+    log: "Cold winds reduced temperature slightly.",
+    effect: (state) => { state.temperature -= 1; }
+  }
+];
 
   let terraProgress = 0;
   let simulationStarted = false;
@@ -52,7 +74,16 @@
 
 function loadTraitBankFromStorage() {
   const traits = JSON.parse(localStorage.getItem("finalDNASequence") || "[]");
-  traitBank = traits.map(t => typeof t === "string" ? t : t.name);
+
+  traitBank = traits.map(t => {
+    if (typeof t === "string") {
+      return { name: t, effect: "No effect info available" };
+    }
+    return {
+      name: t.name || "Unnamed Trait",
+      effect: t.effect || "Unknown effect"
+    };
+  });
 }
 
   function drawUI() {
@@ -67,6 +98,7 @@ function loadTraitBankFromStorage() {
   traitBank.forEach((trait, i) => {
     const x = canvas.width - 410;
     const y = 180 + i * 30;
+    const name = typeof trait === "string" ? trait : trait.name || "Unnamed Trait";
     ctx.fillText(`🧬 ${trait}`, x, y);
   });
 }
@@ -108,12 +140,16 @@ if (showFinalSummary) {
   }
 
   function drawRoundLogs() {
-  const x = 60;
-  const y = canvas.height - 320;
+  const panelWidth = 600;
+  const panelHeight = 240;
+  const x = (canvas.width - panelWidth) / 2;
+  const y = canvas.height - panelHeight - 40;
+
   ctx.fillStyle = "#111";
-  ctx.fillRect(x, y, 600, 240); 
+  ctx.fillRect(x, y, panelWidth, panelHeight);
+
   ctx.strokeStyle = "#00ccff";
-  ctx.strokeRect(x, y, 600, 240);
+  ctx.strokeRect(x, y, panelWidth, panelHeight);
 
   ctx.fillStyle = "#00ccff";
   ctx.font = "16px monospace";
@@ -159,7 +195,7 @@ function drawFinalSummary() {
 
   ctx.fillText(`🧬 Traits Used:`, 80, 350);
   traitBank.forEach((trait, i) => {
-    ctx.fillText(`- ${trait}`, 100, 380 + i * 25);
+    ctx.fillText(`- ${trait}`, 100, 380 + i * 30);
   });
 
   ctx.fillStyle = "#2196F3";
@@ -305,6 +341,19 @@ function drawFinalSummary() {
     planet.toxicity <= 30 &&
     planet.temperature >= 10 && planet.temperature <= 40
   );
+    const currentState = {
+    water: planet.water,
+    oxygen: planet.oxygen,
+    radiation: planet.radiation,
+    toxicity: planet.toxicity,
+    temperature: planet.temperature
+  };
+
+if (Math.random() < 0.6) {
+  const event = planetEvents[Math.floor(Math.random() * planetEvents.length)];
+  event.effect(currentState); 
+  currentRoundLogs.push(`⚠️ Planet Event: ${event.name} — ${event.log}`);
+}
 
   terraProgress = Math.min(100, terraProgress + 5);
   log += `🌱 Progress +5%\n`;

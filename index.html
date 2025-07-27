@@ -64,15 +64,39 @@
       border: 1px solid #00ffcc;
       margin: 20px;
     }
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+    }
   </style>
 </head>
 <body>
 
-  <div id="introVideoWrapper" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 99999;">
-  <video id="introVideo" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover;">
+<div id="introVideoWrapper" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 99999;">
+  <video id="introVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;">
     <source src="intro.mp4" type="video/mp4" />
     Your browser does not support the video tag.
   </video>
+
+<button id="unmuteBtn" style="
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  padding: 10px 20px;
+  font-size: 1em;
+  background: #00ffcc;
+  border: none;
+  border-radius: 6px;
+  color: #001a1a;
+  cursor: pointer;
+  z-index: 100000;
+  display: none;">🔊 Unmute</button>
+
   <button id="skipIntroBtn" onclick="skipIntro()" style="
     position: absolute;
     bottom: 30px;
@@ -102,6 +126,11 @@
       <button class="button secondary-btn" onclick="toggleRulebook()">📖 View Game Guide</button>
     </div>
 
+    <p style="margin-top: 10px; color: #aaf; font-family: monospace; font-size: 16px;">
+  💡 <b>Tip:</b> Fully check through the <b>guidelines</b> to understand the full gameplay experience.
+</p>
+
+
 <div id="shortcutPopup" style="
   display: none;
   position: fixed;
@@ -122,61 +151,70 @@
   <button onclick="closeShortcutPopup()" style="margin-top: 20px; padding: 10px 20px;">❌ Close</button>
 </div>
 
-    <div id="rulebook" style="display: none; max-width: 1000px; margin-top: 20px; color: #aff;">
-      <h2>📜 Rulebook & Player Guide</h2>
+<div id="rulebook" style="display: none; max-width: 1000px; margin-top: 20px; color: #aff;">
+  <h2>📜 Rulebook & Player Guide</h2>
 
-      <h3>🎮 General Objective</h3>
-      <p>You are a scientist on an exoplanet tasked with engineering organisms to survive hostile environments. Complete all modules to terraform the planet.</p>
+  <h3>🎯 Game Objective</h3>
+  <p>You are a scientist on an exoplanet. Engineer species, conquer deadly environments, and terraform the world for life. Complete all modules to succeed.</p>
 
-      <h3>⚙️ Game Procedure</h3>
-      <ol>
-        <li>Planet Naming – Store your world identity.</li>
-        <li>Genome Editor – Choose survival traits.</li>
-        <li>BioForge – Validate genetic constructs.</li>
-        <li>Trait Drafting – Refine trait combinations.</li>
-        <li>DNA Synthesis – Build your DNA strand.</li>
-        <li>Evolution Trials – Test your species in real-time hazards.</li>
-        <li>Terraforming – Change the planet's fate.</li>
-      </ol>
+  <h3>⚙️ Game Modules & Flow</h3>
+  <ol>
+    <li><b>🌍 Planet Naming</b> – Name your world. Stored as <code>planetName</code>.</li>
+    <li><b>🧬 Genome Editor</b> – Select zone-specific traits. Autosaved to <code>finalTraits</code>.</li>
+    <li><b>⚙️ BioForge</b> – Validate traits against environmental constraints. Fix mismatches.</li>
+    <li><b>🔧 Trait Drafting</b> – Filter, organize, and prioritize your trait set for synthesis.</li>
+    <li><b>🧬 DNA Synthesis</b> – Build your DNA strand visually. Adds synergy and adaptation bonuses.</li>
+    <li><b>🧢 Evolution Trials</b> – Test species against hazards with real-time energy and cooldowns.</li>
+    <li><b>🌱 Terraforming</b> – Apply your traits to change planet conditions. Reach ≥100% to win.</li>
+    <li><b>📄 Final Result</b> – Review your mission report with survival score and conditions.</li>
+  </ol>
 
-      <h3>🧪 Controls & Shortcuts</h3>
-      <ul>
-        <li>Move: <b>W/A/S/D</b></li>
-        <li>Interact: Walk into equipment</li>
-        <li>Open Dashboard: <b>Tab</b></li>
-        <li>Open Rulebook: <b>Ctrl + H</b></li>
-        <li>Clear Save: <code>localStorage.clear()</code> (in dev console)</li>
-      </ul>
+  <h3>🧪 Controls & Shortcuts</h3>
+  <ul>
+    <li>👣 Movement: <b>W / A / S / D</b></li>
+    <li>🖱 Interact: Walk near equipment to trigger module</li>
+    <li>📊 Open Dashboard: <b>Tab</b></li>
+    <li>📖 Open Rulebook: <b>Ctrl + H</b></li>
+    <li>🔁 Restart Game: <code>localStorage.clear()</code> in Dev Console</li>
+  </ul>
 
-      <details><summary>🌍 Planet Naming</summary><p>Enter a name for your new planet. Stored as `planetName`.</p></details>
-      <details><summary>🧬 Genome Editor</summary><p>Choose traits for different zones. Autosaved.</p></details>
-      <details><summary>⚙️ BioForge</summary><p>Match environmental constraints and preview errors.</p></details>
-      <details><summary>🔧 Trait Drafting</summary><p>Filter and prioritize traits for synthesis.</p></details>
-      <details><summary>🧬 DNA Synthesis</summary><p>Visualize your DNA with animated strands.</p></details>
-      <details><summary>🧢 Evolution Trials</summary><p>Simulated stress trials with energy & cooldown system.</p></details>
-      <details><summary>🌱 Terraforming</summary><p>Visually transform your planet based on success rate.</p></details>
+  <h3>🔍 Module Details</h3>
+  <details><summary>🌍 Planet Naming</summary><p>Give your planet a unique name. Used in final reports.</p></details>
 
-      <div id="guidelines" style="display: none; max-width: 1000px; margin-top: 20px; color: #aff;">
-  <h2>🧭 Gameplay Guidelines</h2>
+  <details><summary>🧬 Genome Editor</summary><p>Select traits needed for each survival zone. Traits are auto-saved and shown in your DNA profile later.</p></details>
 
-      <ul>
-        <li>💡 Use efficient traits that match multiple zones to conserve energy.</li>
-        <li>🔥 During Evolution Trials, prioritize zones under active threat first.</li>
-        <li>🧬 Don’t overload traits in Genome Editor – balance is key!</li>
-        <li>⚙️ In BioForge, use feedback to correct incompatible traits before proceeding.</li>
-        <li>⏳ Save progress regularly (auto-enabled via localStorage).</li>
-        <li>🌱 If Terraforming doesn’t unlock, replay Evolution Trials to improve survival %.</li>
-        <li>🎯 Hover or walk near lab equipment to see floating tooltips (if enabled).</li>
-      </ul>
-    </div>
+  <details><summary>⚙️ BioForge</summary><p>Check trait compatibility with each environment. Fix or swap traits before moving forward.</p></details>
 
-      <h3>✅ Completion</h3>
-      <ul>
-        <li>Success if survival ≥ 70%.</li>
-        <li>Bonus traits and final results shown.</li>
-        <li>Terraforming visuals complete the game.</li>
-      </ul>
-    </div>
+  <details><summary>🔧 Trait Drafting</summary><p>Reorganize, remove, or filter traits based on importance. Synergize trait pairs for bonuses.</p></details>
+
+  <details><summary>🧬 DNA Synthesis</summary><p>Assemble your final DNA strand. Traits are animated and boost stats depending on synergy.</p></details>
+
+  <details><summary>🧢 Evolution Trials</summary><p>Survive 3 hazard zones in real time. Use energy strategically, dodge threats, and gain a survival score.</p></details>
+
+  <details><summary>🌱 Terraforming</summary><p>Each round simulates environmental change using your traits. Log progress and aim for 100% terraforming success.</p></details>
+
+  <details><summary>📄 Final Result</summary><p>View a detailed report of your species’ survival, conditions, and colonization success. You can export it as an image.</p></details>
+
+  <h3>🧭 Gameplay Tips</h3>
+  <ul>
+    <li>💡 Use multi-zone traits to save DNA space.</li>
+    <li>⚠️ Avoid contradictory traits in BioForge (e.g. cold vs. heat resistance).</li>
+    <li>🧬 Balance trait strength, don’t overload one category.</li>
+    <li>🎯 Prioritize critical zones during Evolution Trials.</li>
+    <li>🌱 Terraforming only unlocks after successful trials (≥70% survival).</li>
+    <li>💾 Your progress is automatically saved via <code>localStorage</code>.</li>
+    <li>🔍 Hover near lab modules for tips (if enabled).</li>
+  </ul>
+
+  <h3>🏁 Completion & Outcome</h3>
+  <ul>
+    <li>✅ You succeed if terraforming reaches 100%.</li>
+    <li>📈 Bonus for survival score ≥ 70% in Evolution Trials.</li>
+    <li>🖼 Final Result page offers summary and screenshot export.</li>
+    <li>🏆 Replay to unlock new trait combos and get better outcomes!</li>
+  </ul>
+</div>
+
   </div>
   <div id="labDashboard" style="
   position: absolute;
@@ -223,6 +261,24 @@
       </div>
     </div>
 
+  <div id="aiAssistantTip" style="
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 30, 30, 0.9);
+  color: #00ffcc;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-family: monospace;
+  max-width: 350px;
+  display: none;
+  z-index: 9999;
+  box-shadow: 0 0 8px #00ffcc;
+">
+  💡 <span id="aiAssistantText">Welcome, scientist.</span>
+</div>
+
+
   <div id="gameContainer"></div>
 
   <script type="module" src="main.js"></script>
@@ -241,6 +297,12 @@
     updateProgressBar();
   }
 
+  function startNewGame() {
+  if (confirm("This will erase all your progress. Are you sure?")) {
+    localStorage.clear();
+    window.location.reload(); 
+  }
+}
   function toggleRulebook() {
     const book = document.getElementById("rulebook");
     book.style.display = book.style.display === "none" ? "block" : "none";
@@ -333,31 +395,80 @@ document.addEventListener("keydown", (e) => {
   if (bar) bar.style.width = percent + "%";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  if (localStorage.getItem("planetName")) {
-    document.getElementById("introScreen").style.display = "none";
-  }
-  updateProgressBar();
-});
-
 function skipIntro() {
-  document.getElementById("introVideoWrapper").style.display = "none";
-  document.getElementById("introScreen").style.display = "flex";
+  const videoWrapper = document.getElementById("introVideoWrapper");
+  const video = document.getElementById("introVideo");
+  const introScreen = document.getElementById("introScreen");
+
+  if (video) {
+    video.muted = true;                // Mute the audio
+    video.pause();                     // Pause playback
+    video.currentTime = 0;             // Reset time
+    video.removeAttribute("src");      // Remove video source
+    video.load();                      // Force unload
+  }
+
+  if (videoWrapper) {
+    videoWrapper.style.display = "none";
+  }
+
+  if (introScreen) {
+    introScreen.style.display = "flex";
+  }
+
   localStorage.setItem("introWatched", "true");
 }
+window.addEventListener("beforeunload", () => {
+  const video = document.getElementById("introVideo");
+  if (video) {
+    video.pause();
+    video.muted = true;
+    video.removeAttribute("src");
+    video.load();
+  }
+});
 
 window.addEventListener("DOMContentLoaded", () => {
   const watched = localStorage.getItem("introWatched");
+  const introWrapper = document.getElementById("introVideoWrapper");
+  const introScreen = document.getElementById("introScreen");
+  const video = document.getElementById("introVideo");
+  const unmuteBtn = document.getElementById("unmuteBtn");
+  const skipBtn = document.getElementById("skipIntroBtn");
 
   if (!watched) {
-    document.getElementById("introVideoWrapper").style.display = "block";
-    document.getElementById("introScreen").style.display = "none";
+    introWrapper.style.display = "block";
+    introScreen.style.display = "none";
 
-    const video = document.getElementById("introVideo");
+    video.muted = false;
+    video.volume = 1;
+
+    // Try autoplay with sound
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        console.warn("Autoplay with sound blocked – showing unmute button.");
+        unmuteBtn.style.display = "block";
+      });
+    }
+
+    // On video end
     video.onended = skipIntro;
+
+    // Skip button
+    skipBtn.addEventListener("click", skipIntro);
+
+    // Unmute button
+    unmuteBtn.addEventListener("click", () => {
+      video.muted = false;
+      video.volume = 1;
+      video.play();
+      unmuteBtn.style.display = "none";
+    });
+
   } else {
-    document.getElementById("introVideoWrapper").style.display = "none";
-    document.getElementById("introScreen").style.display = "flex";
+    introWrapper.style.display = "none";
+    introScreen.style.display = "flex";
   }
 
   updateProgressBar?.();

@@ -253,7 +253,7 @@ function selectOption(button, selected, conditionIndex) {
 
   summary.innerHTML += `</ul>
     <p><strong>Note:</strong> These adaptations will increase the survival percentage in the upcoming tasks.</p>
-    <button class="back-button" onclick="goBack()">🔁 Back to Conditions</button>
+    <button class="back-button" onclick="goBack()">🔁 Retry the Conditions Again</button>
     <button class="option-button" style="margin-left: 10px;" onclick="window.location.href='/index.html'">🏠 Continue to Lab</button>`;
 
   summary.style.display = "block";

@@ -181,7 +181,7 @@ container.innerHTML = `
 
       codonChainEl.innerHTML = `<div style="font-size: 36px; text-align: center; margin: 10px;"><strong>${lastCodon}</strong><div style="font-size: 16px; margin-top: 4px;">${effect}</div></div>`;
       document.getElementById("codonHistory").innerHTML = `
-  <strong>Genome Sequence:</strong><br>${sequenceInput.map(c => `<span style="padding:4px 8px; background:#222; margin:2px; display:inline-block; border-radius:4px;">${c}</span>`).join("")}
+      <strong>Genome Sequence:</strong><br>${sequenceInput.map(c => `<span style="padding:4px 8px; background:#222; margin:2px; display:inline-block; border-radius:4px;">${c}</span>`).join("")}
 `;
       if (codonToProtein[codon]) {
         const protein = codonToProtein[codon];
@@ -220,7 +220,7 @@ container.innerHTML = `
       genomeBar.style.transition = "width 0.4s ease";
       genomeBar.style.width = `${sequenceInput.length * 10}%`;
       genomeBar.style.background = sequenceInput.length >= 8 ? "lime" :
-                                    sequenceInput.length >= 5 ? "orange" : "red";
+      sequenceInput.length >= 5 ? "orange" : "red";
 
     };
 

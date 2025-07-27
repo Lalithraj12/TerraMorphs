@@ -61,6 +61,23 @@ muteBtn.addEventListener("click", () => {
   muteBtn.textContent = ambientAudio.muted ? "🔊 Unmute" : "🔇 Mute";
 });
 
+let currentAITip = null;
+function showAITip(message) {
+  const tipBox = document.getElementById("aiAssistantTip");
+  const tipText = document.getElementById("aiAssistantText");
+
+  if (currentAITip === message) return; 
+  currentAITip = message;
+
+  tipText.innerText = message;
+  tipBox.style.display = "block";
+
+  clearTimeout(window._aiTipTimeout);
+  window._aiTipTimeout = setTimeout(() => {
+    tipBox.style.display = "none";
+    currentAITip = null;
+  }, 5000); 
+}
 
 let scientist = new THREE.Group();
 scientist.name = "scientist";
@@ -195,7 +212,7 @@ document.addEventListener("keydown", (e) => {
 
   const hash = (location.hash || "").toLowerCase();
   keys[e.key.toLowerCase()] = true;
-  if (e.ctrlKey && e.key.toLowerCase() === "m") {
+  if (e.shiftKey && e.key.toLowerCase() === "m") {
     dogState = dogState === "follow" ? "wander" : "follow";
     if (barkSound.isPlaying) barkSound.stop();
     barkSound.play();
@@ -240,6 +257,39 @@ function flashRedAlert() {
     clearInterval(interval);
     overlay.remove();
   }, 3000); 
+}
+
+function checkAIAssistantProximity() {
+  if (!scientist || !clickableObjects) return;
+
+  for (const obj of clickableObjects) {
+    const dist = scientist.position.distanceTo(obj.position);
+    if (dist < 3) {  
+      switch (obj.name) {
+        case "Genome Editor":
+          showAITip("🧬  Choose DNA codons carefully. Each codon affects traits like radiation resistance, oxygen tolerance, and metabolism. Build a balanced genome to ensure survival on hostile planets.");
+          break;
+        case "Bio Forge":
+          showAITip("⚙️ Match your genome traits to environmental constraints. Resolve trait conflicts before proceeding.");
+          break;
+        case "Trait Drafting Console":
+          showAITip("🔧 Prioritize traits that synergize well. Some combinations boost overall fitness.");
+          break;
+        case "DNA Synthesis Lab":
+          showAITip("🧪 Your selected traits are now locked into DNA. Ensure stability before finalizing.");
+          break;
+        case "Evolution Trials":
+          showAITip("🔥 Your species will now face hazards. Stay mobile, use energy wisely, and survive.");
+          break;
+        case "Terraforming Console":
+          showAITip("🌱 Traits now impact the planet. Each round adjusts life support conditions. Survive to green the world.");
+          break;
+        default:
+          break;
+      }
+      return; 
+    }
+  }
 }
 
 function animate() {
@@ -352,6 +402,7 @@ function animate() {
 
   TWEEN.update();
   renderer.render(scene, camera);
+  checkAIAssistantProximity();
 
 mapCtx.clearRect(0, 0, 160, 140);
 mapCtx.fillStyle = '#0f0';
@@ -1094,11 +1145,11 @@ function getProgressReport() {
 
   const steps = [
     { key: "genomeComplete", label: "Genome Editor" },
-    { key: "bioForgeComplete", label: "BioForge" },
-    { key: "traitDraftComplete", label: "Trait Drafting" },
-    { key: "dnaSynthesisComplete", label: "DNA Synthesis" },
+    { key: "bioForgeComplete", label: "Bio Forge" },
+    { key: "traitDraftingComplete", label: "Trait Drafting Console" },
+    { key: "dnaSynthesisComplete", label: "DNA Synthesis Lab" },
     { key: "evolutionTrialComplete", label: "Evolution Trials" },
-    { key: "terraformingComplete", label: "Terraforming" },
+    { key: "terraformingComplete", label: "Terraforming Console" },
     { key: "gameComplete", label: "Final Report" },
   ];
 
@@ -1129,9 +1180,7 @@ function switchScene(name) {
     localStorage.setItem("scientistX", pos.x);
     localStorage.setItem("scientistZ", pos.z);
   }
-
 }
-
 
 window.addEventListener("DOMContentLoaded", () => {
   const planetName = localStorage.getItem("planetName");
