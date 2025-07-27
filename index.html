@@ -401,11 +401,11 @@ function skipIntro() {
   const introScreen = document.getElementById("introScreen");
 
   if (video) {
-    video.muted = true;                // Mute the audio
-    video.pause();                     // Pause playback
-    video.currentTime = 0;             // Reset time
-    video.removeAttribute("src");      // Remove video source
-    video.load();                      // Force unload
+    video.muted = true;                
+    video.pause();                     
+    video.currentTime = 0;            
+    video.removeAttribute("src");     
+    video.load();                      
   }
 
   if (videoWrapper) {
@@ -442,8 +442,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     video.muted = false;
     video.volume = 1;
-
-    // Try autoplay with sound
+    
     const playPromise = video.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
@@ -452,13 +451,8 @@ window.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // On video end
     video.onended = skipIntro;
-
-    // Skip button
     skipBtn.addEventListener("click", skipIntro);
-
-    // Unmute button
     unmuteBtn.addEventListener("click", () => {
       video.muted = false;
       video.volume = 1;
@@ -469,10 +463,19 @@ window.addEventListener("DOMContentLoaded", () => {
   } else {
     introWrapper.style.display = "none";
     introScreen.style.display = "flex";
+
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+      video.muted = true;
+      video.removeAttribute("src");
+      video.load();
+    }
   }
 
   updateProgressBar?.();
 });
+
 
 </script>
 
