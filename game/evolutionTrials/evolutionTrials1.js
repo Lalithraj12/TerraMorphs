@@ -30,7 +30,7 @@ const phases = [
   const zonesList = ["Brain", "Heart", "Genome", "Skin", "Lungs", "Immune", "Muscle"];
   const traits = storedTraits.map((trait, i) => ({
   name: trait.name || trait,
-  zone: zonesList[i % zonesList.length], // Cycle through zones
+  zone: zonesList[i % zonesList.length],
   cooldown: 0,
   energyCost: 3
 }));
@@ -101,18 +101,15 @@ for (let z in zones) smoothZones[z] = 0;
 function drawStartScreen() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Title
   ctx.fillStyle = "#00ffc8";
   ctx.font = "42px monospace";
   ctx.textAlign = "center";
   ctx.fillText("🧬 Evolution Trials", canvas.width / 2, canvas.height / 2 - 80);
 
-  // Subtitle
   ctx.font = "20px monospace";
   ctx.fillStyle = "#ffffff";
   ctx.fillText("Prepare your engineered species to survive hostile phases.", canvas.width / 2, canvas.height / 2 - 40);
 
-  // Button Background
   const buttonX = canvas.width / 2 - 120;
   const buttonY = canvas.height / 2 + 10;
   const buttonW = 240;
@@ -122,22 +119,18 @@ function drawStartScreen() {
   ctx.lineWidth = 3;
   ctx.strokeRect(buttonX, buttonY, buttonW, buttonH);
 
-  // Optional glowing border
   ctx.shadowBlur = 10;
   ctx.shadowColor = "#00ffcc";
 
   ctx.fillStyle = "#001a1a";
   ctx.fillRect(buttonX, buttonY, buttonW, buttonH);
 
-  // Reset shadow
   ctx.shadowBlur = 0;
 
-  // Button Label
   ctx.fillStyle = "#00ffcc";
   ctx.font = "22px monospace";
   ctx.fillText("▶ Start Trial", canvas.width / 2, buttonY + 38);
 
-  // Reset text alignment for other parts
   ctx.textAlign = "start";
 }
   
@@ -175,7 +168,6 @@ function drawStartScreen() {
   ctx.fillStyle = "#00ffff";
   ctx.fillText("🔎 Click to view full evolution report", centerX, centerY + 160);
 
-  // Save dashboard status
   localStorage.setItem("dashboardStatus", "danger");
 }
 
@@ -184,7 +176,6 @@ canvas.addEventListener("click", (e) => {
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
 
-  // 🔁 Retry failed zone popup
   if (popupVisible) {
     const bx = canvas.width / 2 - 60;
     const by = canvas.height / 2 + 60;
@@ -201,7 +192,6 @@ canvas.addEventListener("click", (e) => {
     }
   }
 
-  // 🧬 Start Trial from Start Screen
   if (!gameStarted && !gameOver) {
     const bx = canvas.width / 2 - 120;
     const by = canvas.height / 2 + 10;
@@ -300,12 +290,11 @@ canvas.addEventListener("click", (e) => {
   ctx.font = "20px monospace";
   ctx.fillStyle = "#00ffff";
 
-  const currentPhase = phases[0]; // ✅ Directly access the single phase
+  const currentPhase = phases[0];
 
   ctx.fillText(`🔵 Phase: ${currentPhase.name}`, 20, 30);
   ctx.fillText(`Threats: ${currentPhase.threats.join(", ")}`, 20, 60);
 
-  // Energy and Time
   ctx.fillStyle = "#ffa500";
   ctx.fillText(`⚡ Energy: ${energy}`, canvas.width - 160, 30);
   ctx.fillText(`⏳ Time: ${timer}s`, canvas.width - 160, 60);
@@ -314,7 +303,7 @@ canvas.addEventListener("click", (e) => {
   let flash = false;
   setInterval(() => {
   flash = !flash;
-  }, 500); // Toggle every 500ms
+  }, 500); 
 
   function drawZones() {
   ctx.font = "16px monospace";
@@ -486,6 +475,8 @@ localStorage.setItem("evolutionTrialSummary", JSON.stringify({
     ctx.fillStyle = "#00ffff";
     ctx.fillText("🔁 Click to return to start.", 60, ty + 30);
     localStorage.setItem("evolutionTrialsComplete", "true");
+    showModulePopup("Evolution Trials");
+    updateProgressBar();
     if (survivalScore >= 70) {
     ctx.fillStyle = "#00ff99";
     ctx.fillText("🌍 Terraforming Unlocked!", 60, ty + 60);
@@ -494,15 +485,14 @@ localStorage.setItem("evolutionTrialSummary", JSON.stringify({
     ctx.fillStyle = `hsl(${Date.now() / 50 % 360}, 100%, 70%)`;
     ctx.fillText("🌱 Planetary Engine Activated", 60, ty + 90);
     }
-    // Draw "Retry" Button
-    ctx.fillStyle = "#f44336"; // red
+
+    ctx.fillStyle = "#f44336"; 
     ctx.fillRect(canvas.width - 300, canvas.height - 80, 120, 40);
     ctx.fillStyle = "#fff";
     ctx.font = "18px monospace";
     ctx.fillText("🔁 Retry", canvas.width - 280, canvas.height - 50);
 
-    // Draw "Continue" Button
-    ctx.fillStyle = "#4CAF50"; // green
+    ctx.fillStyle = "#4CAF50"; 
     ctx.fillRect(canvas.width - 160, canvas.height - 80, 120, 40);
     ctx.fillStyle = "#fff";
     ctx.fillText("✅ Continue", canvas.width - 140, canvas.height - 50);
@@ -513,7 +503,7 @@ if (saved) {
   if (confirm("🔁 Resume previous Evolution Trial?")) {
     currentPhaseIndex = saved.currentPhaseIndex;
     energy = saved.energy;
-    Object.assign(zones, saved.zones); // ✅ now zones is defined
+    Object.assign(zones, saved.zones); 
     timer = saved.timer;
     saved.failedZones.forEach(z => failedZones.add(z));
     traits.forEach((t, i) => {
@@ -537,5 +527,5 @@ if (saved) {
     requestAnimationFrame(gameLoop);
   }
 
-  gameLoop(); // ⏯️ Start loop when called
+  gameLoop(); 
 };

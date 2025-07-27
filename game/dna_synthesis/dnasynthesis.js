@@ -447,6 +447,8 @@ function updateDNAStrand() {
   localStorage.setItem('finalDNASequence', JSON.stringify(selectedTraits));
   localStorage.setItem('dnaSynthesisScore', score.toString());
   localStorage.setItem('dnaSynthesisComplete', "true");
+  showModulePopup("DNA Synthesis Lab");
+  updateProgressBar();
   localStorage.setItem("dashboardStatus", "DNA Synthesis Complete");
 
   playSound('finalize.mp3');

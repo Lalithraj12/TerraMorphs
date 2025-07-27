@@ -8,6 +8,7 @@ window.onload = () => {
   container.style.padding = "40px";
   container.style.color = "#fff";
   container.style.background = "#001a1a";
+  container.style.minHeight = "100vh";
 
   container.innerHTML = `
     <h1>🌍 Genesis: Final Report</h1>
@@ -33,11 +34,13 @@ window.onload = () => {
         : `❌ Terraforming incomplete. Retry to colonize ${planetName}.`
     }</p>
 
-    <button onclick="captureMemory()">📸 Capture the Memory</button>
+    <button onclick="captureScreenshot()">📸 Capture the Memory</button>
+    <button onclick="startNewGame()" style="margin-left: 10px;">🔄 New Game</button>
   `;
 
   document.body.appendChild(container);
 };
+
 
 function captureScreenshot() {
   const element = document.body;
@@ -48,4 +51,9 @@ function captureScreenshot() {
     link.href = canvas.toDataURL("image/png");
     link.click();
   });
+}
+
+function startNewGame() {
+  localStorage.clear();
+  window.location.href = "/index.html"; 
 }

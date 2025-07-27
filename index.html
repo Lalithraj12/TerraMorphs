@@ -12,6 +12,7 @@
       background-color: #0b1f2e;
       font-family: 'Orbitron', sans-serif;
     }
+
     #introScreen {
       position: fixed;
       top: 0; left: 0;
@@ -66,6 +67,27 @@
   </style>
 </head>
 <body>
+
+  <div id="introVideoWrapper" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 99999;">
+  <video id="introVideo" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover;">
+    <source src="intro.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+  <button id="skipIntroBtn" onclick="skipIntro()" style="
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    padding: 10px 20px;
+    font-size: 1em;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 100000;">
+    ⏭️ Skip Intro
+  </button>
+</div>
+
   <div id="introScreen">
     <h1 style="font-size: 2.5em; color: #6cf;">🧬 TerraMorphs: The Exogenesis Chronicles</h1>
     <p style="max-width: 800px; text-align: center; font-size: 1.1em;">
@@ -79,6 +101,26 @@
       <button class="button primary-btn" onclick="startGame()">🚀 Start Simulation</button>
       <button class="button secondary-btn" onclick="toggleRulebook()">📖 View Game Guide</button>
     </div>
+
+<div id="shortcutPopup" style="
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #002a2a;
+  color: #aef;
+  border: 2px solid #00ffcc;
+  padding: 30px;
+  border-radius: 10px;
+  z-index: 99999;
+  max-width: 700px;
+  font-family: monospace;
+">
+  <h2 id="shortcutPopupTitle">📖 Information</h2>
+  <div id="shortcutPopupContent"></div>
+  <button onclick="closeShortcutPopup()" style="margin-top: 20px; padding: 10px 20px;">❌ Close</button>
+</div>
 
     <div id="rulebook" style="display: none; max-width: 1000px; margin-top: 20px; color: #aff;">
       <h2>📜 Rulebook & Player Guide</h2>
@@ -136,6 +178,50 @@
       </ul>
     </div>
   </div>
+  <div id="labDashboard" style="
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 280px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #00ffcc;
+  padding: 15px;
+  font-family: monospace;
+  font-size: 14px;
+  border: 1px solid #00ffcc;
+  border-radius: 8px;
+  z-index: 1000;
+"></div>
+<button id="muteBtn" class="button secondary-btn">🔇 Mute</button>
+
+
+<div id="modulePopup" style="
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #001a1a;
+  color: #00ffcc;
+  border: 2px solid #00ffcc;
+  padding: 30px;
+  border-radius: 10px;
+  z-index: 99999;
+  max-width: 600px;
+  text-align: center;
+  font-family: monospace;
+">
+  <h2>🎉 Module Complete!</h2>
+  <p id="modulePopupMessage">You have completed a module.</p>
+  <button onclick="closeModulePopup()" style="margin-top: 20px; padding: 10px 20px; font-size: 1em;">✅ Continue</button>
+</div>
+
+      <div style="width: 80%; max-width: 600px; margin-top: 20px;">
+      <div style="color: #00ffcc; font-size: 0.9em; margin-bottom: 5px;">🧭 Progress Through Modules</div>
+      <div id="progressBarContainer" style="background: #033; width: 100%; height: 20px; border-radius: 10px; overflow: hidden;">
+        <div id="progressBarFill" style="height: 100%; width: 0%; background: linear-gradient(to right, #00ffcc, #0077ff); transition: width 0.5s;"></div>
+      </div>
+    </div>
 
   <div id="gameContainer"></div>
 
@@ -146,13 +232,13 @@
     const name = document.getElementById("planetNameInput").value.trim();
     if (!name) return alert("Please enter a planet name.");
 
-    // ✅ Save data to localStorage
     localStorage.setItem("planetName", name);
     localStorage.setItem("terraformingUnlocked", "true");
     localStorage.setItem("genomeComplete", "false");
 
-    // ✅ Hide the intro screen
     document.getElementById("introScreen").style.display = "none";
+
+    updateProgressBar();
   }
 
   function toggleRulebook() {
@@ -171,12 +257,112 @@
     }
   });
 
-  // ✅ Show rulebook shortcut
   document.addEventListener("keydown", (e) => {
     if (e.ctrlKey && e.key.toLowerCase() === 'h') {
       toggleRulebook();
     }
   });
+
+  function showModulePopup(moduleName) {
+  const popup = document.getElementById("modulePopup");
+  const message = document.getElementById("modulePopupMessage");
+  popup.style.display = "block";
+  message.innerText = `You have successfully completed: ${moduleName}`;
+  setTimeout(() => {
+    popup.style.display = "none";
+  }, 3000);
+    const sound = new Audio("/sounds/module-complete.mp3");
+  sound.play();
+}
+
+function closeModulePopup() {
+  document.getElementById("modulePopup").style.display = "none";
+}
+
+function showShortcutPopup(title, contentHTML) {
+  document.getElementById("shortcutPopupTitle").innerText = title;
+  document.getElementById("shortcutPopupContent").innerHTML = contentHTML;
+  document.getElementById("shortcutPopup").style.display = "block";
+}
+
+function closeShortcutPopup() {
+  document.getElementById("shortcutPopup").style.display = "none";
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.shiftKey && e.key.toLowerCase() === 's') {
+    showShortcutPopup("📜 Rules & Guidelines", `
+      <ul style="text-align: left;">
+        <li>💡 Objective: Complete all modules to terraform your exoplanet.</li>
+        <li>🧬 Select traits wisely to adapt to different zones.</li>
+        <li>⚠️ Monitor energy and cooldowns during trials.</li>
+        <li>🧪 Forge compatible DNA using the BioForge tool.</li>
+        <li>🎯 Your final goal is a survivable planet with stable conditions.</li>
+      </ul>
+    `);
+  }
+  if (e.shiftKey && e.key.toLowerCase() === 'h') {
+    showShortcutPopup("🎮 Gameplay Procedure", `
+      <ol style="text-align: left;">
+        <li>🌍 Name Your Planet</li>
+        <li>🧬 Edit Genome – Select traits for survival.</li>
+        <li>⚙️ BioForge – Validate and correct traits.</li>
+        <li>📊 Trait Drafting – Filter and prioritize optimal genes.</li>
+        <li>🧪 DNA Synthesis – Build your final strand.</li>
+        <li>🧢 Evolution Trials – Real-time tests for survivability.</li>
+        <li>🌱 Terraforming – Improve planet conditions based on genome.</li>
+        <li>✅ Final Result – View your colonization report.</li>
+      </ol>
+    `);
+  }
+});
+
+  function updateProgressBar() {
+  const modules = [
+    "genomeComplete",
+    "bioForgeComplete",
+    "traitDraftComplete",
+    "dnaSynthesisComplete",
+    "evolutionTrialComplete",
+    "gameComplete"
+  ];
+  const completed = modules.filter(key => localStorage.getItem(key) === "true").length;
+  const percent = Math.round((completed / modules.length) * 100);
+
+  const bar = document.getElementById("progressBarFill");
+  if (bar) bar.style.width = percent + "%";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("planetName")) {
+    document.getElementById("introScreen").style.display = "none";
+  }
+  updateProgressBar();
+});
+
+function skipIntro() {
+  document.getElementById("introVideoWrapper").style.display = "none";
+  document.getElementById("introScreen").style.display = "flex";
+  localStorage.setItem("introWatched", "true");
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const watched = localStorage.getItem("introWatched");
+
+  if (!watched) {
+    document.getElementById("introVideoWrapper").style.display = "block";
+    document.getElementById("introScreen").style.display = "none";
+
+    const video = document.getElementById("introVideo");
+    video.onended = skipIntro;
+  } else {
+    document.getElementById("introVideoWrapper").style.display = "none";
+    document.getElementById("introScreen").style.display = "flex";
+  }
+
+  updateProgressBar?.();
+});
+
 </script>
 
 </body>

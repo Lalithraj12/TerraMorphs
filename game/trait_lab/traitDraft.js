@@ -126,7 +126,6 @@
     return "🧬";
   }
 
-  // Add hover animation to all buttons
 function applyButtonAnimations() {
   document.querySelectorAll("button").forEach(btn => {
     btn.style.transition = "transform 0.2s ease, background-color 0.3s ease";
@@ -188,7 +187,7 @@ function applyButtonAnimations() {
         <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
           ${species.traits.map((trait, index) => {
   const icon = getTraitIcon(trait.name);
-  const barWidth = Math.min(100, trait.cost * 10); // max 100%
+  const barWidth = Math.min(100, trait.cost * 10); 
   return `
     <div class="trait-card" data-index="${index}" style="border:1px solid #ccc; padding:10px; width:180px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); cursor:pointer; border-radius:8px;">
       <h4>${icon} ${trait.name}</h4>
@@ -247,6 +246,8 @@ function applyButtonAnimations() {
     localStorage.setItem('selectedTraitsDraft', JSON.stringify(selectedTraits));
     localStorage.setItem('selectedTraits', JSON.stringify(selectedTraits));
     localStorage.setItem('traitDraftingComplete', "true");
+    showModulePopup("Trait Drafting COnsole"); 
+    updateProgressBar();
     console.log("✅ Trait Drafting Complete:", selectedTraits);
     const draftScore = calculateTraitDraftScore(selectedTraits);
 

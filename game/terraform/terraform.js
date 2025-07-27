@@ -13,9 +13,8 @@
   canvas.style.zIndex = "9999";
   canvas.style.background = "#001a1a";
 
-  const successSound = new Audio("assets/sounds/success.mp3");  // 🎉 When terraforming hits 75%
-  const clickSound = new Audio("assets/sounds/click.mp3");      // 🖱️ Button click sound
-
+  const successSound = new Audio("assets/sounds/success.mp3");  
+  const clickSound = new Audio("assets/sounds/click.mp3");      
   function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -124,7 +123,7 @@ if (showFinalSummary) {
   ctx.font = "14px monospace";
   let logY = y + 40;
 
-  const maxLines = 12; // Or increase as per box size
+  const maxLines = 12;
   const recentLogs = displayedLogs.slice(-maxLines);
   recentLogs.forEach(line => {
     ctx.fillText(line, x + 10, logY);
@@ -182,12 +181,13 @@ function drawFinalSummary() {
   };
   localStorage.setItem("terraformingSummary", JSON.stringify(result));
   localStorage.setItem("gameComplete", "true");
+  showModulePopup("Terraforming Console"); 
+  updateProgressBar(); 
 
   ctx.font = "16px monospace";
   ctx.fillStyle = "#999";
   ctx.fillText("Press R to Restart or S to Save Result", 80, canvas.height - 60);
 
-  // Button click handler
   canvas.addEventListener("click", function finalSummaryClick(e) {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -196,13 +196,12 @@ function drawFinalSummary() {
     if (showFinalSummary) {
       if (mx >= 260 && mx <= 460 && my >= canvas.height - 100 && my <= canvas.height - 60) {
         console.log("Continue clicked"); 
-        window.location.href = "/finalResult/finalResult.html"; // ✅ Trigger here only
+        window.location.href = "/finalResult/finalResult.html";
       }
       if (mx >= 80 && mx <= 240 && my >= canvas.height - 100 && my <= canvas.height - 60) {
         location.reload(); 
       }
     }
-    // Remove this handler after first use to prevent stacking
     canvas.removeEventListener("click", finalSummaryClick);
   });
 }
@@ -219,19 +218,16 @@ function drawFinalSummary() {
 
   function startSimulation() {
   const interval = setInterval(() => {
-    // ✅ Stop if progress reaches 100% OR round count reaches 7
     if (terraProgress >= 100) {
       clearInterval(interval);
       showFinalSummary = true;
 
-      // ✅ Play cheer sound only once
       const cheerSound = new Audio("/sounds/success.mp3");
       if (!localStorage.getItem("terraSoundPlayed")) {
         cheerSound.play();
         localStorage.setItem("terraSoundPlayed", "true");
       }
 
-      // ✅ Save result summary
       localStorage.setItem("terraformingSummary", JSON.stringify({
         finalConditions: planet,
         traitsUsed: traitBank,
@@ -241,13 +237,11 @@ function drawFinalSummary() {
       localStorage.setItem("gameComplete", "true");
       localStorage.setItem("dashboardStatus", terraProgress >= 100 ? "success" : "danger");
 
-      setTimeout(() => drawFinalSummary(), 100); // Small delay for stability
+      setTimeout(() => drawFinalSummary(), 100); 
       return;
     }
-
-    // ✅ Continue simulation until condition is met
     applyTraitsAndSimulateRound();
-    drawUI();
+    showLoadingScreen(drawUI); 
   }, 1000);
 }
 
@@ -285,8 +279,6 @@ function drawFinalSummary() {
         }
         break;
     }
-
-    // ✅ Log the trait activation per trait inside the loop
     log += `🧬 ${trait} activated\n`;
   });
 
@@ -294,14 +286,12 @@ function drawFinalSummary() {
     const prevRadiation = planet.radiation;
     const prevToxicity = planet.toxicity;
 
-    // Simulate changes
     planet.temperature += Math.random() < 0.5 ? -1 : 1;
     planet.radiation += Math.random() < 0.3 ? 1 : 0;
     planet.toxicity += Math.random() < 0.2 ? 1 : 0;
     const prevOxygen = planet.oxygen;
     const prevWater = planet.water;
 
-    // Log changes
     log += `🌡 Temperature: ${prevTemp}°C → ${planet.temperature}°C\n`;
     log += `☢ Radiation: ${prevRadiation} → ${planet.radiation}\n`;
     log += `🧪 Toxicity: ${prevToxicity} → ${planet.toxicity}\n`;
@@ -332,7 +322,7 @@ startTypingLog(log);
 
 function startTypingLog(fullLog) {
   const lines = fullLog.split("\n");
-  displayedLogs.push(""); // Add empty entry for this round
+  displayedLogs.push("");
   currentLineIndex = displayedLogs.length - 1;
   currentCharIndex = 0;
 
@@ -345,10 +335,10 @@ function startTypingLog(fullLog) {
       currentCharIndex++;
     } else {
       clearInterval(logTypingTimer);
-      displayedLogs[currentLineIndex] = currentLine; // Ensure full line saved
+      displayedLogs[currentLineIndex] = currentLine; 
     }
-    drawUI(); // Redraw canvas with typed log
-  }, 30); // typing speed per character
+    drawUI(); 
+  }, 30);
 }
 
 function handleFinalScreenButtons(e) {
@@ -365,7 +355,7 @@ function handleFinalScreenButtons(e) {
   if (x >= canvas.width / 2 + 20 && x <= canvas.width / 2 + 140 &&
       y >= 250 && y <= 300) {
     clickSound.play();
-    window.location.href = "../finalResult/finalResult.html"; // ✅ Trigger here only
+    window.location.href = "../finalResult/finalResult.html";
   }
 }
 
@@ -383,7 +373,6 @@ function showFinalResultScreen() {
   ctx.fillStyle = "#ccc";
   ctx.fillText("Your engineered traits enabled planetary colonization.", canvas.width / 2 - 250, 150);
 
-  // Retry Button
   ctx.fillStyle = "#222";
   ctx.fillRect(canvas.width / 2 - 140, 250, 120, 50);
   ctx.strokeStyle = "#fff";
@@ -391,7 +380,6 @@ function showFinalResultScreen() {
   ctx.fillStyle = "#fff";
   ctx.fillText("🔁 Retry", canvas.width / 2 - 120, 280);
 
-  // Continue Button
   ctx.fillStyle = "#222";
   ctx.fillRect(canvas.width / 2 + 20, 250, 120, 50);
   ctx.strokeStyle = "#fff";

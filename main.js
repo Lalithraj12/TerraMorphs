@@ -52,6 +52,16 @@ walkSound.loop = true;
 walkSound.volume = 0.3;
 const clickableObjects = [], raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
 
+const ambientAudio = new Audio("sounds/ambient.mp3");
+ambientAudio.loop = true;
+ambientAudio.volume = 0.5; 
+const muteBtn = document.getElementById("muteBtn");
+muteBtn.addEventListener("click", () => {
+  ambientAudio.muted = !ambientAudio.muted;
+  muteBtn.textContent = ambientAudio.muted ? "🔊 Unmute" : "🔇 Mute";
+});
+
+
 let scientist = new THREE.Group();
 scientist.name = "scientist";
 scientist.position.set(0, 0, 0);
@@ -450,14 +460,12 @@ renderer.domElement.addEventListener("click", (event) => {
   if (intersects.length > 0) {
     let equipment = intersects[0].object;
 
-    // Traverse up to find main parent with onClick
     while (equipment.parent && !equipment.userData?.onClick && equipment !== scene) {
       equipment = equipment.parent;
     }
 
     const distance = scientist.position.distanceTo(equipment.getWorldPosition(new THREE.Vector3()));
 
-    // Show interaction message if far
     if (distance > 2 && equipment.userData?.onClick) {
       const msg = document.createElement('div');
       msg.textContent = 'Move closer to interact';
@@ -925,7 +933,7 @@ const wallMaterial = new THREE.MeshStandardMaterial({
   side: THREE.DoubleSide
 });
 const glassMaterial = new THREE.MeshStandardMaterial({
-  color: 0x004477,               // Darker blue glass
+  color: 0x004477,             
   transparent: true,
   opacity: 0.6,
   emissive: 0x2299ff,
@@ -1034,14 +1042,12 @@ function initMainScene() {
 
   const savedPlanetName = localStorage.getItem("planetName");
 
-  // ✅ Skip intro if planet already named
   if (savedPlanetName) {
     console.log("🌍 Planet already named:", savedPlanetName);
     introScreen.style.display = "none";
     return;
   }
 
-  // ✅ Show intro screen
   introScreen.style.display = "flex";
   setTimeout(() => {
     introScreen.style.opacity = "1";
@@ -1056,14 +1062,16 @@ startGameBtn.addEventListener("click", () => {
     setTimeout(() => {
       introScreen.style.display = "none";
       console.log("✅ Planet Name Saved:", name);
-      animate(); // ✅ START GAME LOOP HERE!
+      animate(); 
+      ambientAudio.play().catch(e => {
+      console.warn("Autoplay blocked, user interaction required to play audio.");
+});
+
     }, 1000);
   } else {
     alert("Please enter your planet name.");
   }
 });
-
-  // ✅ Show guide
   if (hintBtn && hintText) {
     hintBtn.addEventListener("click", () => {
       hintText.style.display = "block";
@@ -1080,7 +1088,41 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// ✅ Function to switch scenes and save position
+function getProgressReport() {
+  const planetName = localStorage.getItem("planetName") || "Unnamed Planet";
+  const speciesName = localStorage.getItem("speciesName") || "Unknown Species";
+
+  const steps = [
+    { key: "genomeComplete", label: "Genome Editor" },
+    { key: "bioForgeComplete", label: "BioForge" },
+    { key: "traitDraftComplete", label: "Trait Drafting" },
+    { key: "dnaSynthesisComplete", label: "DNA Synthesis" },
+    { key: "evolutionTrialComplete", label: "Evolution Trials" },
+    { key: "terraformingComplete", label: "Terraforming" },
+    { key: "gameComplete", label: "Final Report" },
+  ];
+
+  const completed = steps.filter(step => localStorage.getItem(step.key) === "true");
+  const pending = steps.filter(step => !localStorage.getItem(step.key));
+
+  let report = `📡 Planet: ${planetName}\n🧬 Species: ${speciesName}\n\n`;
+
+  report += "✅ Completed:\n";
+  report += completed.length ? completed.map(s => "• " + s.label).join("\n") : "• None";
+  
+  report += "\n\n⏳ Remaining:\n";
+  report += pending.length ? pending.map(s => "• " + s.label).join("\n") : "• All Done!";
+
+  return report;
+}
+
+function updateLabDashboard() {
+  const dashboard = document.getElementById("labDashboard");
+  if (!dashboard) return;
+
+  dashboard.innerText = getProgressReport();
+}
+
 function switchScene(name) {
   if (typeof scientist !== "undefined" && scientist.position) {
     const pos = scientist.position;
@@ -1096,10 +1138,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (planetName) {
     console.log("✅ Planet named, launching game...");
-    animate(); // Start game loop
+    ambientAudio.play().catch(() => {
+      console.warn("🔇 Autoplay blocked, waiting for user interaction.");
+    });
+
+    initMainScene(); 
+    animate(); 
+    updateProgressBar(); 
+    updateLabDashboard(); 
   } else {
     console.log("🧬 No planet yet. Showing intro screen...");
-    initMainScene(); // Show intro and wait for name
+    initMainScene(); 
   }
 });
-

@@ -29,7 +29,8 @@ export function run(container) {
   const introSeen = localStorage.getItem("genomeIntroSeen") === "true";
 
 if (introSeen) {
-  launchEditor(container);  // Directly load the editor
+  container.innerHTML = "";  
+  launchEditor(container);
   return;
 }
 
@@ -50,6 +51,8 @@ container.innerHTML = `
 
     continueBtn.onclick = () => {
     localStorage.setItem("genomeIntroSeen", "true");
+    showModulePopup("Genome Editor");
+    updateProgressBar();
     editorScreen.style.display = 'block';
     document.getElementById('introScreen').remove();
 
@@ -68,6 +71,7 @@ container.innerHTML = `
 
     startButton.onclick = () => {
       const name = nameInput.value.trim();
+      localStorage.setItem("speciesName", name);
       if (!/^[A-Z][a-z]+ [a-z]+$/.test(name)) {
         errorSound.play();
         alert("❌ Please enter a valid binomial name (e.g., Homo sapiens)");
@@ -250,7 +254,6 @@ if (success) {
 
   typeWriterEffect(finalResult, summaryText, 25);
 
-  // Add the Continue button AFTER typing finishes
   setTimeout(() => {
     const continueBtn = document.createElement("button");
     continueBtn.textContent = "Continue";

@@ -150,7 +150,7 @@ function openCondition(index) {
     return;
   }
 
-  currentCondition = index; // ✅ FIXED HERE
+  currentCondition = index; 
   document.getElementById("conditionContainer").style.display = "none";
   document.getElementById("introText").style.display = "none";
   document.getElementById("summaryScreen").style.display = "none";
@@ -170,7 +170,6 @@ function openCondition(index) {
   document.getElementById("conditionDetail").style.display = "block";
   document.getElementById("backButton").addEventListener("click", goBack);
 
-  // ✅ Only this one is needed
   document.querySelectorAll(".option-button").forEach(button => {
     button.addEventListener("click", () =>
       selectOption(button, button.getAttribute("data-opt"), currentCondition)
@@ -187,9 +186,9 @@ function selectOption(button, selected, conditionIndex) {
     }
     btn.disabled = true;
     if (btn.getAttribute("data-opt") === conditions[conditionIndex].correct) {
-      btn.style.backgroundColor = "#4CAF50"; // Green for correct
+      btn.style.backgroundColor = "#4CAF50";
     } else {
-      btn.style.backgroundColor = "#f44336"; // Red for others
+      btn.style.backgroundColor = "#f44336"; 
     }
   });
 
@@ -238,6 +237,8 @@ function selectOption(button, selected, conditionIndex) {
   function showSummary() {
   const summary = document.getElementById("summaryScreen");
   localStorage.setItem("bioForgeComplete", "true");
+  showModulePopup("Bio Forge");
+  updateProgressBar();
   const updatedGenome = localStorage.getItem("playerGenome") || "Unknown";
 
   summary.innerHTML = `<h2>🧬 Adaptation Summary</h2>
